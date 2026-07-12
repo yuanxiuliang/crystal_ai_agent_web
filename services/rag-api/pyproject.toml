@@ -1,0 +1,45 @@
+[project]
+name = "agentweb-rag-api"
+version = "0.1.0"
+description = "RAG API service for AgentWeb GrowthRAG platform"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115.0",
+  "uvicorn[standard]>=0.30.0",
+  "pydantic>=2.8.0",
+  "python-dotenv>=1.0.0",
+  "langgraph>=0.2.0",
+  "pymilvus>=2.6,<2.7",
+  "grpcio>=1.60.0",
+  "onnx>=1.16.0",
+  "onnxruntime>=1.18.0",
+  "optimum[onnxruntime]>=1.20.0",
+  "sentence-transformers>=3.3.0"
+]
+
+[project.scripts]
+rag-chat = "src.cli.rag_chat:main"
+rag-config = "src.cli.rag_config:main"
+rag-embed = "src.cli.rag_embed:main"
+rag-export-minilm-onnx = "src.cli.rag_export_minilm_onnx:main"
+rag-ingest = "src.cli.rag_ingest:main"
+rag-bootstrap = "src.cli.rag_bootstrap:main"
+rag-normalize = "src.cli.rag_normalize:main"
+rag-search = "src.cli.rag_search:main"
+rag-memory-worker = "src.cli.rag_memory_worker:main"
+rag-memory-init = "src.cli.rag_memory_init:main"
+
+[project.optional-dependencies]
+postgres = [
+  "psycopg[binary]>=3.2,<4",
+  "langgraph-checkpoint-postgres>=2.0,<4"
+]
+dev = [
+  "pytest>=8.2.0",
+  "pytest-asyncio>=0.23.0",
+  "ruff>=0.6.0"
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"

@@ -1,0 +1,6 @@
+#!/usr/bin/env zsh
+set -e
+
+PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+
+exec "$PROJECT_ROOT/services/rag-api/rag-chat" "$@"

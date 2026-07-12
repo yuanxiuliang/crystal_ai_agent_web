@@ -1,0 +1,15 @@
+{
+  "name": "agentweb",
+  "private": true,
+  "packageManager": "pnpm@9.15.0",
+  "scripts": {
+    "dev:rag": "pnpm --filter @agentweb/rag-platform dev",
+    "dev:rag:full": "./scripts/dev-rag.sh --web",
+    "dev:portal": "pnpm --filter @agentweb/portal dev",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0"
+  }
+}

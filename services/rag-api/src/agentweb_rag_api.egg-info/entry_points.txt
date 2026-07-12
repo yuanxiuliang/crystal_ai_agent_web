@@ -1,0 +1,9 @@
+[console_scripts]
+rag-bootstrap = src.cli.rag_bootstrap:main
+rag-chat = src.cli.rag_chat:main
+rag-config = src.cli.rag_config:main
+rag-embed = src.cli.rag_embed:main
+rag-export-minilm-onnx = src.cli.rag_export_minilm_onnx:main
+rag-ingest = src.cli.rag_ingest:main
+rag-normalize = src.cli.rag_normalize:main
+rag-search = src.cli.rag_search:main

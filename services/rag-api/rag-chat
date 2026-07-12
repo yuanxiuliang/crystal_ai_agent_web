@@ -1,0 +1,17 @@
+#!/usr/bin/env zsh
+set -e
+
+SERVICE_DIR="$(cd "$(dirname "$0")" && pwd)"
+cd "$SERVICE_DIR"
+
+if [[ -f "$HOME/.zshrc" ]]; then
+  source "$HOME/.zshrc" >/dev/null 2>&1 || true
+fi
+
+if [[ ! -x ".venv/bin/python" ]]; then
+  echo "rag-chat: missing .venv/bin/python in $SERVICE_DIR" >&2
+  echo "rag-chat: run dependency setup in services/rag-api first." >&2
+  exit 1
+fi
+
+exec .venv/bin/python -m src.cli.rag_chat --trace --top-k "${RAG_CHAT_TOP_K:-3}" "$@"

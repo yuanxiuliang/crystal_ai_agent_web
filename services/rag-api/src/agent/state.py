@@ -6,10 +6,15 @@ from typing import Any, Literal, NotRequired, TypedDict
 RetrievalMode = Literal["dense", "sparse", "hybrid"]
 Intent = Literal["direct_answer", "retrieve", "clarify", "smalltalk", "unsupported"]
 AnswerMode = Literal["direct", "evidence_grounded", "ask_clarification", "refuse_or_redirect"]
+RetrievalOutcomeStatus = Literal[
+    "sufficient", "empty", "insufficient", "invalid_request", "unavailable"
+]
+SelectedEvidenceKind = Literal["literature_record", "model_prediction"]
 
 
 class RuntimeOptions(TypedDict):
     force_retrieve: bool
+    evidence_only: bool
     top_k: int
     retrieval_mode: RetrievalMode
     model: str | None
@@ -34,14 +39,23 @@ class ActiveContext(TypedDict):
     current_task: str | None
 
 
+class SessionMaterial(TypedDict):
+    formula: str
+    evidence_kind: SelectedEvidenceKind | None
+
+
 class ShortMemory(TypedDict):
     conversation_summary: str | None
     recent_focus: str | None
     confirmed_slots: dict[str, Any]
     open_questions: list[str]
+    material_history: list[SessionMaterial]
+    last_turn_kind: str | None
 
 
-MemoryType = Literal["preference", "constraint", "research_profile", "project_digest", "confirmed_fact"]
+MemoryType = Literal[
+    "preference", "constraint", "research_profile", "project_digest", "confirmed_fact"
+]
 MemorySource = Literal["user_confirmed", "explicit_user_request", "inferred"]
 
 
@@ -57,7 +71,9 @@ class LongMemoryItem(TypedDict):
 
 class UserUnderstanding(TypedDict):
     normalized_question: str
-    task_type: Literal["explain", "retrieve", "compare", "recommend", "summarize", "clarify", "unknown"]
+    task_type: Literal[
+        "explain", "retrieve", "compare", "recommend", "summarize", "clarify", "unknown"
+    ]
     materials: list[str]
     formulas: list[str]
     growth_methods: list[str]
@@ -141,8 +157,25 @@ class EvidenceGrade(TypedDict):
     reason: str
     usable_record_ids: list[str]
     missing_evidence: list[str]
-    answer_strategy: Literal["single_record", "compare_records", "recommend_with_limits", "insufficient"]
+    answer_strategy: Literal[
+        "single_record", "compare_records", "recommend_with_limits", "insufficient"
+    ]
     confidence: float
+
+
+class RetrievalOutcome(TypedDict):
+    status: RetrievalOutcomeStatus
+    reason_codes: list[str]
+    requested_slots: list[str]
+    covered_slots: list[str]
+    usable_record_ids: list[str]
+    fallback_allowed: bool
+
+
+class PredictionEligibility(TypedDict):
+    eligible: bool
+    reason: str
+    formula: str | None
 
 
 class Citation(TypedDict):
@@ -191,6 +224,8 @@ class FinalResponse(TypedDict):
     citations: list[Citation]
     route: RouteDecision | None
     retrieval: dict[str, Any] | None
+    evidence_kind: SelectedEvidenceKind | None
+    prediction: dict[str, Any] | None
     memory: dict[str, Any]
     errors: list[GraphError]
 
@@ -223,8 +258,16 @@ class GrowthRAGState(TypedDict):
 
     retrieval_plan: RetrievalPlan | None
     retrieved_records: list[RetrievedRecord]
+    usable_retrieved_records: list[RetrievedRecord]
+    retrieval_error: GraphError | None
     evidence_pack: EvidencePack | None
     evidence_grade: EvidenceGrade | None
+    retrieval_outcome: RetrievalOutcome | None
+
+    prediction_eligibility: PredictionEligibility | None
+    prediction_result: dict[str, Any] | None
+    prediction_error: str | None
+    selected_evidence_kind: SelectedEvidenceKind | None
 
     answer_plan: NotRequired[dict[str, Any] | None]
     draft_answer: str | None

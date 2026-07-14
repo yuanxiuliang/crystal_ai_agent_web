@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "model_id": "growth-route-transformer",
+  "model_version": "v2.0.0",
+  "checkpoint": "models/v2.0.0_run1.best.pth",
+  "checkpoint_sha256": "8c230a91bfe13e5f725fe44538a1c008ffc8626b06675058d5de5eaeab3d2e3e",
+  "parameter_count": 6614099,
+  "runtime": "pytorch",
+  "required_python_packages": [
+    "torch",
+    "numpy",
+    "pymatgen"
+  ],
+  "task": {
+    "input": "chemical formula",
+    "output": "up to three constrained single-crystal growth route candidates",
+    "supported_methods": [
+      "Flux",
+      "CVT"
+    ],
+    "temperature_bin_size_c": 10,
+    "duration_bin_size_h": 5,
+    "beam_size_default": 20,
+    "return_sequences_default": 3
+  },
+  "evaluation": {
+    "split": "formula-grouped held-out validation",
+    "n_samples": 542,
+    "method_accuracy_top1": 0.9206642066420664,
+    "raw_set_f1_top1": 0.7989752559863257,
+    "adtv_set_f1_top1": 0.6230627306273062,
+    "route_exact_match_top1": 0.43911439114391143,
+    "route_hit_top3": 0.5479704797047971,
+    "temperature_mae_c_top1": 129.18737474949899,
+    "duration_mae_h_top1": 141.68037837837838,
+    "valid_unique_routes_top3_mean": 2.3062730627306274
+  }
+}

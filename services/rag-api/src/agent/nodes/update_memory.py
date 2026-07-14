@@ -5,12 +5,19 @@ import hashlib
 import re
 
 from ...memory.store import MemoryStore
+from ..short_term_policy import (
+    is_material_history_request,
+    seed_material_history,
+    turn_formulas,
+    update_material_history,
+)
 from ..state import GrowthRAGState, MemoryCandidate
 from ..utils import (
     assistant_message,
     bounded_active_context,
     clip_text,
     compact_short_memory,
+    default_short_memory,
     trace,
 )
 
@@ -34,7 +41,9 @@ async def update_memory(state: GrowthRAGState, store: MemoryStore) -> dict:
             active_context["active_constraints"] = understanding["constraints"]
         active_context["current_task"] = understanding["task_type"]
     if state["citations"]:
-        active_context["last_retrieval_record_ids"] = [item["record_id"] for item in state["citations"]]
+        active_context["last_retrieval_record_ids"] = [
+            item["record_id"] for item in state["citations"]
+        ]
     active_context = bounded_active_context(active_context, store.limits.active_context_max_items)
 
     candidates = _explicit_memory_candidates(state)
@@ -67,15 +76,34 @@ async def update_memory(state: GrowthRAGState, store: MemoryStore) -> dict:
         max_messages=store.limits.short_max_messages,
         max_summary_chars=store.limits.summary_max_chars,
     )
-    short_memory = dict(state["short_memory"])
+    short_memory = default_short_memory()
+    short_memory.update(state["short_memory"])
     short_memory["conversation_summary"] = conversation_summary
     short_memory["recent_focus"] = clip_text(state["user_message"], 240)
+    short_memory["material_history"] = update_material_history(
+        seed_material_history(
+            short_memory["material_history"],
+            messages=state["messages"],
+            conversation_summary=state["conversation_summary"],
+            max_items=store.limits.session_material_history_max_items,
+        ),
+        turn_formulas(state),
+        evidence_kind=state["selected_evidence_kind"],
+        max_items=store.limits.session_material_history_max_items,
+    )
+    short_memory["last_turn_kind"] = (
+        "material_history"
+        if is_material_history_request(state["user_message"], state["short_memory"])
+        else None
+    )
     if understanding:
         slots = dict(short_memory["confirmed_slots"])
         if understanding["formulas"]:
             slots["formulas"] = understanding["formulas"][-store.limits.active_context_max_items :]
         if understanding["growth_methods"]:
-            slots["growth_methods"] = understanding["growth_methods"][-store.limits.active_context_max_items :]
+            slots["growth_methods"] = understanding["growth_methods"][
+                -store.limits.active_context_max_items :
+            ]
         short_memory["confirmed_slots"] = slots
 
     if state["short_term_backend"] == "checkpointer":

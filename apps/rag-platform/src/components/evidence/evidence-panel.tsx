@@ -1,70 +1,43 @@
-import type { Citation, RetrievalTrace, RouteDecision } from "../../lib/types";
+import { BookOpen, ExternalLink, X } from "lucide-react";
+import type { FinalResponse } from "../../lib/types";
 
 type EvidencePanelProps = {
-  citations: Citation[];
-  route: RouteDecision | null;
-  retrieval: RetrievalTrace | null;
-  currentNode: string | null;
-  activity: string[];
+  isOpen: boolean;
+  onClose: () => void;
+  response: FinalResponse | null;
 };
 
-export function EvidencePanel({ citations, route, retrieval, currentNode, activity }: EvidencePanelProps) {
+export function EvidencePanel({ isOpen, onClose, response }: EvidencePanelProps) {
+  const citations = response?.citations ?? [];
+  const isPrediction = response?.evidence_kind === "model_prediction";
   return (
-    <aside className="evidence-panel">
-      <section className="panel-section">
-        <h2 className="section-title">Activity</h2>
-        {currentNode ? <div className="trace-box">正在：{currentNode}</div> : <p className="muted">空闲</p>}
-        {activity.length > 0 ? (
-          <div className="trace-box">
-            {activity.map((item, index) => (
-              <div key={`${item}-${index}`}>{item}</div>
-            ))}
-          </div>
-        ) : null}
-      </section>
-
-      <section className="panel-section">
-        <h2 className="section-title">Route</h2>
-        {route ? (
-          <div className="trace-box">
-            <div>intent: {route.intent}</div>
-            <div>retrieve: {route.should_retrieve ? "yes" : "no"}</div>
-            <div>{route.reason}</div>
-          </div>
-        ) : (
-          <p className="muted">暂无路由决策</p>
-        )}
-      </section>
-
-      <section className="panel-section">
-        <h2 className="section-title">Retrieval</h2>
-        {retrieval ? (
-          <div className="trace-box">
-            <div>query: {retrieval.query}</div>
-            <div>top_k: {retrieval.top_k}</div>
-            <div>results: {retrieval.result_count}</div>
-            <div>sufficient: {String(retrieval.sufficient)}</div>
-          </div>
-        ) : (
-          <p className="muted">本轮尚无检索</p>
-        )}
-      </section>
-
-      <section className="panel-section">
-        <h2 className="section-title">Citations</h2>
-        {citations.length === 0 ? (
-          <p className="muted">暂无引用</p>
-        ) : (
-          citations.map((citation) => (
-            <article className="citation-card" key={citation.record_id}>
-              <div className="record-id">{citation.record_id}</div>
-              <div className="muted">score: {citation.score.toFixed(2)}</div>
-              {citation.doi ? <div className="muted">doi: {citation.doi}</div> : null}
-              <div className="source-text">{citation.source_text}</div>
+    <aside className={`evidence-panel ${isOpen ? "is-open" : ""}`} aria-label="证据来源">
+      <div className="evidence-header">
+        <div><BookOpen size={18} aria-hidden="true" /><span>证据来源</span></div>
+        <button className="icon-control" onClick={onClose} title="关闭证据面板" type="button"><X size={18} /></button>
+      </div>
+      {isPrediction ? (
+        <div className="evidence-empty">
+          <strong>模型候选不包含文献引用</strong>
+          <p>本轮内容来自本地路线预测模型，需在实验前独立核查可行性和安全性。</p>
+        </div>
+      ) : citations.length === 0 ? (
+        <div className="evidence-empty">当前回答没有可展示的文献记录。</div>
+      ) : (
+        <div className="citation-list">
+          {citations.map((citation) => (
+            <article className="citation-entry" key={citation.record_id}>
+              <div className="citation-record">{citation.record_id}</div>
+              {citation.doi ? (
+                <a className="doi-link" href={`https://doi.org/${citation.doi}`} rel="noreferrer" target="_blank">
+                  <span>{citation.doi}</span><ExternalLink size={14} aria-hidden="true" />
+                </a>
+              ) : null}
+              <p>{citation.source_text}</p>
             </article>
-          ))
-        )}
-      </section>
+          ))}
+        </div>
+      )}
     </aside>
   );
 }

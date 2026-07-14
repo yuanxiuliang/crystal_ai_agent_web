@@ -18,3 +18,8 @@ ruff>=0.6.0
 [postgres]
 psycopg[binary]<4,>=3.2
 langgraph-checkpoint-postgres<4,>=2.0
+
+[prediction]
+torch<3,>=2.0
+numpy<3,>=1.26
+pymatgen>=2024.1

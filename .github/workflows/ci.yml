@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend tests
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            services/rag-api/pyproject.toml
+            infra/docker/requirements.cpu.txt
+      - name: Install CPU-only backend dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --prefer-binary \
+            --index-url https://pypi.tuna.tsinghua.edu.cn/simple \
+            https://mirrors.aliyun.com/pytorch-wheels/cpu/torch-2.6.0%2Bcpu-cp312-cp312-linux_x86_64.whl
+          python -m pip install --prefer-binary \
+            --index-url https://pypi.tuna.tsinghua.edu.cn/simple \
+            -c infra/docker/requirements.cpu.txt \
+            "./services/rag-api[postgres,prediction,dev]"
+      - name: Lint backend
+        working-directory: services/rag-api
+        run: ruff check src tests
+      - name: Test backend
+        working-directory: services/rag-api
+        run: pytest -q tests
+
+  frontend:
+    name: Frontend checks
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Type check RAG Web
+        run: pnpm --filter @agentweb/rag-platform typecheck
+      - name: Build RAG Web
+        run: pnpm --filter @agentweb/rag-platform build
+
+  deployment-assets:
+    name: Deployment asset checks
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check shell syntax
+        run: bash -n scripts/*.sh
+      - name: Validate production Compose definition
+        run: >-
+          RAG_ENV_FILE=.env.x1c.example docker compose
+          --env-file infra/compose/.env.x1c.example
+          -f infra/compose/docker-compose.x1c.yml
+          config -q

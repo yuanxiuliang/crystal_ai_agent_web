@@ -84,6 +84,49 @@ def test_memory_is_persistent_and_bounded(tmp_path) -> None:
     assert "ZnIn2S4" in memories[0]["content"]
 
 
+def test_short_memory_material_history_survives_message_compaction(tmp_path) -> None:
+    store = _store(tmp_path)
+    graph = GrowthRAGGraph(
+        llm=MockLLMClient(), retrieval=MockRetrievalService(), memory_store=store
+    )
+    user_id = "researcher-a"
+    session_id = "material-history"
+    formulas = ["Mn3GaN", "EuCr2As2", "Mn3ZnN"]
+
+    for formula in formulas:
+        asyncio.run(
+            _run_turn(
+                graph,
+                user_id=user_id,
+                session_id=session_id,
+                message=f"我要长{formula}单晶",
+            )
+        )
+
+    recalled = asyncio.run(
+        _run_turn(
+            graph,
+            user_id=user_id,
+            session_id=session_id,
+            message="我问过哪些单晶样品？",
+        )
+    )
+    follow_up = asyncio.run(
+        _run_turn(
+            graph,
+            user_id=user_id,
+            session_id=session_id,
+            message="没有其他的吗？",
+        )
+    )
+    snapshot = store.load_session(user_id, session_id)
+
+    assert snapshot is not None
+    assert [item["formula"] for item in snapshot.short_memory["material_history"]] == formulas
+    assert all(formula in recalled["answer"] for formula in formulas)
+    assert all(formula in follow_up["answer"] for formula in formulas)
+
+
 def test_long_memory_upserts_and_enforces_quota(tmp_path) -> None:
     store = _store(tmp_path)
     created = store.upsert_memory(

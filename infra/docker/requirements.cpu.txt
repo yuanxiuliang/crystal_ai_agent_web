@@ -1,0 +1,3 @@
+# The X1C deployment is CPU-only. Do not loosen this constraint: unconstrained Linux
+# torch resolution can select a CUDA build and download several GiB of NVIDIA packages.
+torch==2.6.0+cpu

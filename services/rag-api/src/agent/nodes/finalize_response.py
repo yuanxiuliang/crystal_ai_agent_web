@@ -12,7 +12,10 @@ async def finalize_response(state: GrowthRAGState) -> dict:
             "filters": state["retrieval_plan"]["filters"],
             "top_k": state["retrieval_plan"]["top_k"],
             "result_count": len(state["retrieved_records"]),
-            "sufficient": state["evidence_grade"]["is_sufficient"] if state["evidence_grade"] else None,
+            "sufficient": state["evidence_grade"]["is_sufficient"]
+            if state["evidence_grade"]
+            else None,
+            "outcome": state["retrieval_outcome"],
         }
     response: FinalResponse = {
         "message_id": new_message_id("assistant"),
@@ -21,6 +24,8 @@ async def finalize_response(state: GrowthRAGState) -> dict:
         "citations": state["citations"],
         "route": state["route"],
         "retrieval": retrieval,
+        "evidence_kind": state["selected_evidence_kind"],
+        "prediction": state["prediction_result"],
         "memory": {
             "short_term_updated": state["short_term_persisted"],
             "long_term_written": any(item["written"] for item in state["memory_writes"]),
@@ -29,5 +34,7 @@ async def finalize_response(state: GrowthRAGState) -> dict:
     }
     return {
         "final_response": response,
-        "trace": [trace("finalize_response", "finalized", {"has_answer": bool(response["answer"])})],
+        "trace": [
+            trace("finalize_response", "finalized", {"has_answer": bool(response["answer"])})
+        ],
     }

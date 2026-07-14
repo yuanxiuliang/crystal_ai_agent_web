@@ -14,6 +14,7 @@ src/agent/nodes/answer_with_evidence.py
 src/agent/nodes/answer_with_limits.py
 src/agent/nodes/ask_clarification.py
 src/agent/nodes/build_evidence_pack.py
+src/agent/nodes/compact_persistent_state.py
 src/agent/nodes/finalize_response.py
 src/agent/nodes/grade_evidence.py
 src/agent/nodes/load_context.py
@@ -39,6 +40,8 @@ src/cli/rag_config.py
 src/cli/rag_embed.py
 src/cli/rag_export_minilm_onnx.py
 src/cli/rag_ingest.py
+src/cli/rag_memory_init.py
+src/cli/rag_memory_worker.py
 src/cli/rag_normalize.py
 src/cli/rag_search.py
 src/db/__init__.py
@@ -55,7 +58,9 @@ src/llm/factory.py
 src/llm/mock_client.py
 src/llm/openai_compatible.py
 src/memory/__init__.py
+src/memory/checkpointer.py
 src/memory/store.py
+src/memory/worker.py
 src/retrieval/__init__.py
 src/retrieval/embedding.py
 src/retrieval/factory.py
@@ -73,3 +78,4 @@ src/streaming/__init__.py
 src/streaming/events.py
 src/streaming/sse.py
 tests/test_memory.py
+tests/test_postgres_memory.py

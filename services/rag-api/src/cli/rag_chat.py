@@ -15,10 +15,16 @@ def build_parser() -> argparse.ArgumentParser:
         prog="rag-chat",
         description="Validate the AgentWeb GrowthRAG workflow from the command line.",
     )
-    parser.add_argument("message", nargs="?", help="Single user message. Omit it for interactive mode.")
+    parser.add_argument(
+        "message", nargs="?", help="Single user message. Omit it for interactive mode."
+    )
     parser.add_argument("--user-id", default="cli-user", help="User id used by the graph state.")
-    parser.add_argument("--session-id", default="cli-session", help="Session id used by the graph state.")
-    parser.add_argument("--top-k", type=int, default=3, help="Number of retrieval records to request.")
+    parser.add_argument(
+        "--session-id", default="cli-session", help="Session id used by the graph state."
+    )
+    parser.add_argument(
+        "--top-k", type=int, default=3, help="Number of retrieval records to request."
+    )
     parser.add_argument(
         "--retrieval-mode",
         choices=["dense", "sparse", "hybrid"],
@@ -26,9 +32,13 @@ def build_parser() -> argparse.ArgumentParser:
         help="Retrieval mode passed to the graph.",
     )
     parser.add_argument("--force-retrieve", action="store_true", help="Force the retrieval path.")
-    parser.add_argument("--trace", action="store_true", help="Print node, route, retrieval, evidence events.")
+    parser.add_argument(
+        "--trace", action="store_true", help="Print node, route, retrieval, evidence events."
+    )
     parser.add_argument("--json", action="store_true", help="Print the final response as JSON.")
-    parser.add_argument("--mock", action="store_true", help="Force mock LLM for offline workflow checks.")
+    parser.add_argument(
+        "--mock", action="store_true", help="Force mock LLM for offline workflow checks."
+    )
     return parser
 
 
@@ -157,6 +167,28 @@ def handle_event(event: StreamEvent, trace_enabled: bool, answer_chunks: list[st
             f"sufficient={data.get('is_sufficient')} | confidence={data.get('confidence')} "
             f"| {data.get('reason')}"
         )
+    elif event.event == "retrieval_outcome" and trace_enabled:
+        print(
+            "[retrieval] "
+            f"status={data.get('status')} | reasons={data.get('reason_codes')} "
+            f"| usable={data.get('usable_record_ids')}"
+        )
+    elif event.event == "prediction_eligible" and trace_enabled:
+        print(
+            "[prediction] "
+            f"eligible={data.get('eligible')} | formula={data.get('formula')} | {data.get('reason')}"
+        )
+    elif event.event == "prediction_started" and trace_enabled:
+        print(f"[prediction] started | source={data.get('source')}")
+    elif event.event == "prediction_result" and trace_enabled:
+        model = data.get("model", {})
+        print(
+            "[prediction] "
+            f"run={data.get('prediction_run_id')} | routes={len(data.get('routes', []))} "
+            f"| model={model.get('model_id')}@{model.get('model_version')}"
+        )
+    elif event.event == "prediction_warning" and trace_enabled:
+        print(f"[prediction:warning] {data.get('message')}")
     elif event.event == "citation" and trace_enabled:
         print(f"[citation] {data.get('record_id')} | doi={data.get('doi')}")
     elif event.event == "token":
@@ -166,7 +198,9 @@ def handle_event(event: StreamEvent, trace_enabled: bool, answer_chunks: list[st
         answer_chunks.append(text)
         print(text, end="", flush=True)
     elif event.event == "error":
-        print(f"\n[error] {json.dumps(data.get('errors', []), ensure_ascii=False)}", file=sys.stderr)
+        print(
+            f"\n[error] {json.dumps(data.get('errors', []), ensure_ascii=False)}", file=sys.stderr
+        )
 
 
 def ensure_trace_line_start(answer_chunks: list[str]) -> None:

@@ -39,6 +39,7 @@ class MemoryLimits:
     postgres_connect_timeout_seconds: int
     checkpoint_thread_rollover_turns: int = 100
     semantic_candidate_limit: int = 24
+    session_material_history_max_items: int = 40
 
     @classmethod
     def from_settings(cls, value: Settings) -> "MemoryLimits":
@@ -47,13 +48,18 @@ class MemoryLimits:
             summary_max_chars=max(200, min(4000, value.memory_summary_max_chars)),
             message_max_chars=max(200, min(12000, value.memory_message_max_chars)),
             active_context_max_items=max(1, min(20, value.memory_active_context_max_items)),
+            session_material_history_max_items=max(
+                4, min(100, value.memory_session_material_history_max_items)
+            ),
             long_max_items_per_user=max(10, min(1000, value.memory_long_max_items_per_user)),
             long_prompt_max_items=max(1, min(12, value.memory_long_prompt_max_items)),
             long_prompt_max_chars=max(300, min(4000, value.memory_long_prompt_max_chars)),
             session_ttl_days=max(1, min(365, value.memory_session_ttl_days)),
             event_ttl_days=max(1, min(365, value.memory_event_ttl_days)),
             cleanup_interval_seconds=max(60, value.memory_cleanup_interval_seconds),
-            postgres_connect_timeout_seconds=max(1, min(15, value.memory_postgres_connect_timeout_seconds)),
+            postgres_connect_timeout_seconds=max(
+                1, min(15, value.memory_postgres_connect_timeout_seconds)
+            ),
             checkpoint_thread_rollover_turns=max(1, min(1000, value.memory_thread_rollover_turns)),
             semantic_candidate_limit=max(1, min(100, value.memory_semantic_candidate_limit)),
         )
@@ -105,8 +111,7 @@ class MemoryStore:
         if value.startswith("postgresql://") or value.startswith("postgres://"):
             return "postgres", value
         raise ValueError(
-            "MEMORY_DATABASE_URL must use sqlite:///... or postgresql://...; "
-            f"got {value!r}."
+            f"MEMORY_DATABASE_URL must use sqlite:///... or postgresql://...; got {value!r}."
         )
 
     def _connect(self):
@@ -125,7 +130,9 @@ class MemoryStore:
             raise RuntimeError(
                 "PostgreSQL memory storage requires psycopg. Install the rag-api dependencies first."
             ) from exc
-        return psycopg.connect(self.location, connect_timeout=self.limits.postgres_connect_timeout_seconds)
+        return psycopg.connect(
+            self.location, connect_timeout=self.limits.postgres_connect_timeout_seconds
+        )
 
     def _sql(self, query: str) -> str:
         return query if self.kind == "sqlite" else query.replace("?", "%s")
@@ -161,8 +168,7 @@ class MemoryStore:
             return
 
         columns = {
-            row[1]
-            for row in connection.execute("PRAGMA table_info(memory_items)").fetchall()
+            row[1] for row in connection.execute("PRAGMA table_info(memory_items)").fetchall()
         }
         for name, definition in _SQLITE_MEMORY_COLUMNS.items():
             if name not in columns:
@@ -206,9 +212,13 @@ class MemoryStore:
         short_memory: dict[str, Any],
     ) -> PersistResult:
         self.ensure_schema()
-        messages = _bounded_messages(messages, self.limits.short_max_messages, self.limits.message_max_chars)
+        messages = _bounded_messages(
+            messages, self.limits.short_max_messages, self.limits.message_max_chars
+        )
         conversation_summary = (
-            _clip_text(conversation_summary, self.limits.summary_max_chars) if conversation_summary else None
+            _clip_text(conversation_summary, self.limits.summary_max_chars)
+            if conversation_summary
+            else None
         )
         active_context = _bounded_context(active_context, self.limits.active_context_max_items)
         short_memory = _bounded_short_memory(short_memory, self.limits)
@@ -614,7 +624,12 @@ class MemoryStore:
             haystack = f"{memory_key} {content}".lower()
             overlap = sum(1 for term in terms if term in haystack)
             semantic_score = (semantic_scores or {}).get(str(row[0]), 0.0)
-            score = int(row[8]) + type_weight.get(memory_type, 0) + overlap * 20 + int(semantic_score * 40)
+            score = (
+                int(row[8])
+                + type_weight.get(memory_type, 0)
+                + overlap * 20
+                + int(semantic_score * 40)
+            )
             ranked.append((score, row))
         ranked.sort(key=lambda item: (item[0], str(item[1][6])), reverse=True)
 
@@ -673,7 +688,9 @@ class MemoryStore:
         for row in rows:
             embedding = _json_float_list(row[10] if len(row) > 10 else None)
             if len(embedding) == len(query_embedding):
-                scores[str(row[0])] = max(0.0, sum(left * right for left, right in zip(embedding, query_embedding)))
+                scores[str(row[0])] = max(
+                    0.0, sum(left * right for left, right in zip(embedding, query_embedding))
+                )
         return scores
 
     def _execute_many(self, cursor: Any, query: str, params: list[tuple[Any, ...]]) -> None:
@@ -986,24 +1003,55 @@ def _bounded_short_memory(value: dict[str, Any], limits: MemoryLimits) -> dict[s
     if not isinstance(confirmed_slots, dict):
         confirmed_slots = {}
     bounded_slots: dict[str, Any] = {}
-    for key, slot_value in list(confirmed_slots.items())[:limits.active_context_max_items]:
+    for key, slot_value in list(confirmed_slots.items())[: limits.active_context_max_items]:
         if isinstance(slot_value, list):
             bounded_slots[_clip_text(str(key), 80)] = [
-                _clip_text(str(item), 120) for item in slot_value[-limits.active_context_max_items :]
+                _clip_text(str(item), 120)
+                for item in slot_value[-limits.active_context_max_items :]
             ]
         else:
             bounded_slots[_clip_text(str(key), 80)] = _clip_text(str(slot_value), 240)
     open_questions = value.get("open_questions", [])
     if not isinstance(open_questions, list):
         open_questions = []
+    material_history = value.get("material_history", [])
+    if not isinstance(material_history, list):
+        material_history = []
+    bounded_material_history: list[dict[str, str | None]] = []
+    known_formulas: set[str] = set()
+    for item in material_history:
+        if not isinstance(item, dict):
+            continue
+        formula = _clip_text(str(item.get("formula", "")), 80)
+        if not formula or formula in known_formulas:
+            continue
+        known_formulas.add(formula)
+        evidence_kind = item.get("evidence_kind")
+        bounded_material_history.append(
+            {
+                "formula": formula,
+                "evidence_kind": (
+                    str(evidence_kind)
+                    if evidence_kind in {"literature_record", "model_prediction"}
+                    else None
+                ),
+            }
+        )
     summary = value.get("conversation_summary")
     return {
-        "conversation_summary": _clip_text(str(summary), limits.summary_max_chars) if summary else None,
+        "conversation_summary": _clip_text(str(summary), limits.summary_max_chars)
+        if summary
+        else None,
         "recent_focus": _clip_text(str(value.get("recent_focus", "")), 240) or None,
         "confirmed_slots": bounded_slots,
         "open_questions": [
-            _clip_text(str(item), 240) for item in open_questions[-limits.active_context_max_items :]
+            _clip_text(str(item), 240)
+            for item in open_questions[-limits.active_context_max_items :]
         ],
+        "material_history": bounded_material_history[-limits.session_material_history_max_items :],
+        "last_turn_kind": (
+            "material_history" if value.get("last_turn_kind") == "material_history" else None
+        ),
     }
 
 
@@ -1013,7 +1061,10 @@ def _terms(query: str, hints: Iterable[str]) -> set[str]:
     for value in values:
         lowered = value.lower()
         terms.update(match.group(0) for match in re.finditer(r"[a-z0-9]{2,}", lowered))
-        terms.update(match.group(0) for match in re.finditer(r"[A-Z][a-z]?(?:\d+)?(?:[A-Z][a-z]?\d*)+", value))
+        terms.update(
+            match.group(0)
+            for match in re.finditer(r"[A-Z][a-z]?(?:\d+)?(?:[A-Z][a-z]?\d*)+", value)
+        )
     return terms
 
 
@@ -1133,5 +1184,7 @@ def get_memory_store() -> MemoryStore:
     if _default_store is None:
         with _default_store_lock:
             if _default_store is None:
-                _default_store = MemoryStore(settings.memory_database_url, MemoryLimits.from_settings(settings))
+                _default_store = MemoryStore(
+                    settings.memory_database_url, MemoryLimits.from_settings(settings)
+                )
     return _default_store

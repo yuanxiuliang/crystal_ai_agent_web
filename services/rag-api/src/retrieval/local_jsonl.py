@@ -2,8 +2,6 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any
-
 from ..agent.state import RetrievalPlan, RetrievedRecord
 from .growth_records import normalize_growth_record
 

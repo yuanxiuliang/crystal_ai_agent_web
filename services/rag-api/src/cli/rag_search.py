@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 
 from ..agent.state import RetrievalFilters
-from ..retrieval.milvus_hybrid import MilvusHybridRetriever, SearchMode
+from ..retrieval.milvus_hybrid import MilvusHybridRetriever
 from ..retrieval.query_expansion import expand_query_for_bm25
 
 

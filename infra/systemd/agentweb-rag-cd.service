@@ -1,0 +1,13 @@
+[Unit]
+Description=AgentWeb RAG tested GitHub deployment poller
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=__DEPLOY_USER__
+WorkingDirectory=__DEPLOY_ROOT__
+EnvironmentFile=-/etc/agentweb-rag-cd.env
+ExecStart=__DEPLOY_ROOT__/scripts/x1c-auto-deploy.sh
+TimeoutStartSec=0

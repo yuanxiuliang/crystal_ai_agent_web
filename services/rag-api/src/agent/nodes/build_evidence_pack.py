@@ -21,7 +21,7 @@ async def build_evidence_pack(state: GrowthRAGState) -> dict:
     records: list[EvidenceRecord] = []
     citations: list[Citation] = []
     missing_fields: set[str] = set()
-    for record in state["retrieved_records"]:
+    for record in state["usable_retrieved_records"]:
         facts = _record_facts(record)
         if not record.get("temperature_program"):
             missing_fields.add("temperature_program")
@@ -55,6 +55,6 @@ async def build_evidence_pack(state: GrowthRAGState) -> dict:
     return {
         "evidence_pack": pack,
         "citations": citations,
+        "selected_evidence_kind": "literature_record",
         "trace": [trace("build_evidence_pack", "built", {"count": len(records)})],
     }
-

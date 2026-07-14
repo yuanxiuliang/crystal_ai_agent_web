@@ -1,11 +1,22 @@
 # RAG LangGraph Design
 
+> Architecture status: the current graph implements the retrieval-first prediction fallback
+> defined in `docs/project-constraints.md` and
+> `docs/unified-research-platform-design.md`. It never runs retrieval and prediction in
+> parallel or fuses their evidence into one answer.
+>
+> The detailed v0.1 sections below remain useful as a record of the original retrieval and
+> memory design. Where they say that every insufficient retrieval ends at `answer_with_limits`,
+> they are superseded by the current v0.2 behavior: a completed `empty` or `insufficient`
+> retrieval may enter `PredictionService` only for an eligible candidate-route request with one
+> valid formula. `unavailable` retrieval outcomes and evidence-only requests never predict.
+
 本文档定义项目 3：RAG 检索增强生成对话平台的 LangGraph 设计版本。
 
 当前版本：
 
 ```text
-GrowthRAG Graph v0.1
+GrowthRAG Graph v0.2
 ```
 
 该版本服务于第一阶段 MVP，重点解决：
@@ -15,10 +26,12 @@ GrowthRAG Graph v0.1
 3. 生成检索计划。
 4. 执行 Milvus BM25 + dense vector + RRF hybrid retrieval。
 5. 判断检索结果是否足够。
-6. 融合检索证据生成回答。
-7. 维护短期会话记忆。
-8. 按规则写入长期用户记忆。
-9. 向前端输出可观察的流式事件。
+6. 按确定性规则判定检索记录是否足够。
+7. 在证据不足且问题符合条件时，回退到本地候选路线预测。
+8. 保持真实记录与模型预测的证据来源互斥。
+9. 维护短期会话记忆。
+10. 按规则写入长期用户记忆。
+11. 向前端输出可观察的流式事件。
 
 当前开发阶段不以 Web 前端作为默认入口。主验证入口为 `services/rag-api` 的 CLI，用于在终端直接观察节点流转、路由决策、检索结果、证据评分和最终回答。FastAPI/SSE 与 Web UI 保留为后续接入路径。
 
@@ -36,6 +49,8 @@ GrowthRAG Graph v0.1
 6. 检索结果必须可追溯到 `record_id` 和 `source_text`。
 7. 回答必须区分数据事实、模型推断和不确定信息。
 8. 长期记忆不得无条件写入。
+9. 未来接入预测模型时，Chat 必须先完成检索充分性判定；一轮回答只能选择真实记录或模型预测其中之一。
+10. Milvus 不可用不代表没有真实数据，不能自动转为模型预测。
 
 LangGraph 官方定位是面向 long-running、stateful agent 的低层编排框架，核心能力包括 durable execution、streaming、human-in-the-loop 和 persistence。该能力组合与本项目的“检索决策 + 长短期记忆 + 流式对话”需求匹配。
 

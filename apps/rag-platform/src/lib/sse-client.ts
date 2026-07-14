@@ -9,7 +9,6 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_RAG_API_BASE_URL ?? "http://localho
 
 export async function streamChat(
   body: {
-    user_id: string;
     session_id: string;
     message: string;
     options: {
@@ -20,9 +19,12 @@ export async function streamChat(
     };
   },
   handlers: StreamHandlers,
+  signal?: AbortSignal,
 ) {
   const response = await fetch(`${API_BASE_URL}/api/rag/chat/stream`, {
     method: "POST",
+    credentials: "include",
+    signal,
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
@@ -61,4 +63,3 @@ function parseSseChunk(chunk: string): RagStreamEvent | null {
   const data = JSON.parse(dataLine.replace("data:", "").trim());
   return { event, data } as RagStreamEvent;
 }
-

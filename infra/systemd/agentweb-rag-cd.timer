@@ -1,0 +1,12 @@
+[Unit]
+Description=Poll GitHub for tested AgentWeb RAG releases
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=5min
+RandomizedDelaySec=30s
+Persistent=true
+Unit=agentweb-rag-cd.service
+
+[Install]
+WantedBy=timers.target

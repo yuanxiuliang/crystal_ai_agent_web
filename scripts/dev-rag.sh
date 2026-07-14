@@ -170,6 +170,11 @@ export EMBEDDING_PROVIDER EMBEDDING_MODEL EMBEDDING_BACKEND EMBEDDING_ONNX_MODEL
 export EMBEDDING_TOKENIZER_PATH EMBEDDING_DIM EMBEDDING_BATCH_SIZE EMBEDDING_MAX_LENGTH EMBEDDING_DEVICE
 export MEMORY_DATABASE_URL MEMORY_CHECKPOINT_BACKEND MEMORY_SEMANTIC_SEARCH_ENABLED
 
+# Prediction runs are user-owned PostgreSQL records in the normal RAG profile. Keep the
+# explicit variable aligned with the memory database unless an operator intentionally splits it.
+PREDICTION_DATABASE_URL="${PREDICTION_DATABASE_URL:-$MEMORY_DATABASE_URL}"
+export PREDICTION_DATABASE_URL
+
 COMPOSE_SERVICES=(milvus-etcd milvus-minio milvus-standalone)
 if [[ "$RAG_MEMORY_PROFILE" == "postgres" ]]; then
   COMPOSE_SERVICES=(postgres "${COMPOSE_SERVICES[@]}")

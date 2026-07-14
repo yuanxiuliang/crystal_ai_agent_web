@@ -15,7 +15,9 @@ from ..utils import (
 )
 
 
-async def prepare_turn(payload: dict[str, Any], existing_state: dict[str, Any] | None = None) -> GrowthRAGState:
+async def prepare_turn(
+    payload: dict[str, Any], existing_state: dict[str, Any] | None = None
+) -> GrowthRAGState:
     message = str(payload.get("message", "")).strip()
     message_id = payload.get("message_id") or new_message_id("user")
     runtime = default_runtime(payload.get("options"))
@@ -39,7 +41,9 @@ async def prepare_turn(payload: dict[str, Any], existing_state: dict[str, Any] |
     restored_messages = []
     if short_term_backend == "checkpointer" and existing_state:
         restored_messages = existing_state.get("messages") or []
-    messages = [*restored_messages, user_message(message, message_id)] if message else restored_messages
+    messages = (
+        [*restored_messages, user_message(message, message_id)] if message else restored_messages
+    )
     if not restored_messages:
         messages = [*history[-12:], user_message(message, message_id)] if message else history[-12:]
 
@@ -66,8 +70,15 @@ async def prepare_turn(payload: dict[str, Any], existing_state: dict[str, Any] |
         "route": None,
         "retrieval_plan": None,
         "retrieved_records": [],
+        "usable_retrieved_records": [],
+        "retrieval_error": None,
         "evidence_pack": None,
         "evidence_grade": None,
+        "retrieval_outcome": None,
+        "prediction_eligibility": None,
+        "prediction_result": None,
+        "prediction_error": None,
+        "selected_evidence_kind": None,
         "draft_answer": None,
         "final_answer": None,
         "citations": [],

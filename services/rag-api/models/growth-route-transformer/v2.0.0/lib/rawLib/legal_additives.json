@@ -1,0 +1,2432 @@
+[
+  {
+    "formula": "I2",
+    "count": 621,
+    "elements": [
+      "I"
+    ]
+  },
+  {
+    "formula": "Sn",
+    "count": 356,
+    "elements": [
+      "Sn"
+    ]
+  },
+  {
+    "formula": "H2O",
+    "count": 161,
+    "elements": [
+      "H",
+      "O"
+    ]
+  },
+  {
+    "formula": "Al",
+    "count": 150,
+    "elements": [
+      "Al"
+    ]
+  },
+  {
+    "formula": "KCl",
+    "count": 143,
+    "elements": [
+      "Cl",
+      "K"
+    ]
+  },
+  {
+    "formula": "PbO",
+    "count": 143,
+    "elements": [
+      "O",
+      "Pb"
+    ]
+  },
+  {
+    "formula": "CuO",
+    "count": 137,
+    "elements": [
+      "Cu",
+      "O"
+    ]
+  },
+  {
+    "formula": "PbF2",
+    "count": 121,
+    "elements": [
+      "F",
+      "Pb"
+    ]
+  },
+  {
+    "formula": "In",
+    "count": 117,
+    "elements": [
+      "In"
+    ]
+  },
+  {
+    "formula": "NaCl",
+    "count": 114,
+    "elements": [
+      "Cl",
+      "Na"
+    ]
+  },
+  {
+    "formula": "B2O3",
+    "count": 106,
+    "elements": [
+      "B",
+      "O"
+    ]
+  },
+  {
+    "formula": "FeAs",
+    "count": 98,
+    "elements": [
+      "As",
+      "Fe"
+    ]
+  },
+  {
+    "formula": "TeCl4",
+    "count": 89,
+    "elements": [
+      "Cl",
+      "Te"
+    ]
+  },
+  {
+    "formula": "Ni2B",
+    "count": 69,
+    "elements": [
+      "B",
+      "Ni"
+    ]
+  },
+  {
+    "formula": "AlCl3",
+    "count": 66,
+    "elements": [
+      "Al",
+      "Cl"
+    ]
+  },
+  {
+    "formula": "Bi",
+    "count": 64,
+    "elements": [
+      "Bi"
+    ]
+  },
+  {
+    "formula": "BaO",
+    "count": 60,
+    "elements": [
+      "Ba",
+      "O"
+    ]
+  },
+  {
+    "formula": "Br2",
+    "count": 47,
+    "elements": [
+      "Br"
+    ]
+  },
+  {
+    "formula": "Cl2",
+    "count": 47,
+    "elements": [
+      "Cl"
+    ]
+  },
+  {
+    "formula": "LiCl",
+    "count": 45,
+    "elements": [
+      "Cl",
+      "Li"
+    ]
+  },
+  {
+    "formula": "Bi2O3",
+    "count": 44,
+    "elements": [
+      "Bi",
+      "O"
+    ]
+  },
+  {
+    "formula": "Te",
+    "count": 40,
+    "elements": [
+      "Te"
+    ]
+  },
+  {
+    "formula": "HCl",
+    "count": 38,
+    "elements": [
+      "Cl",
+      "H"
+    ]
+  },
+  {
+    "formula": "Pb",
+    "count": 37,
+    "elements": [
+      "Pb"
+    ]
+  },
+  {
+    "formula": "RbCl",
+    "count": 34,
+    "elements": [
+      "Cl",
+      "Rb"
+    ]
+  },
+  {
+    "formula": "CsCl",
+    "count": 31,
+    "elements": [
+      "Cl",
+      "Cs"
+    ]
+  },
+  {
+    "formula": "K2CO3",
+    "count": 31,
+    "elements": [
+      "C",
+      "K",
+      "O"
+    ]
+  },
+  {
+    "formula": "Ar",
+    "count": 30,
+    "elements": [
+      "Ar"
+    ]
+  },
+  {
+    "formula": "NaAs",
+    "count": 30,
+    "elements": [
+      "As",
+      "Na"
+    ]
+  },
+  {
+    "formula": "SrCl2",
+    "count": 28,
+    "elements": [
+      "Cl",
+      "Sr"
+    ]
+  },
+  {
+    "formula": "BaCl2",
+    "count": 26,
+    "elements": [
+      "Ba",
+      "Cl"
+    ]
+  },
+  {
+    "formula": "Sb",
+    "count": 26,
+    "elements": [
+      "Sb"
+    ]
+  },
+  {
+    "formula": "NaOH",
+    "count": 24,
+    "elements": [
+      "H",
+      "Na",
+      "O"
+    ]
+  },
+  {
+    "formula": "Au",
+    "count": 23,
+    "elements": [
+      "Au"
+    ]
+  },
+  {
+    "formula": "Ga",
+    "count": 23,
+    "elements": [
+      "Ga"
+    ]
+  },
+  {
+    "formula": "Bi2Mo3O12",
+    "count": 22,
+    "elements": [
+      "Bi",
+      "Mo",
+      "O"
+    ]
+  },
+  {
+    "formula": "KF",
+    "count": 22,
+    "elements": [
+      "F",
+      "K"
+    ]
+  },
+  {
+    "formula": "O2",
+    "count": 22,
+    "elements": [
+      "O"
+    ]
+  },
+  {
+    "formula": "Cu",
+    "count": 21,
+    "elements": [
+      "Cu"
+    ]
+  },
+  {
+    "formula": "InCu",
+    "count": 21,
+    "elements": [
+      "Cu",
+      "In"
+    ]
+  },
+  {
+    "formula": "V2O5",
+    "count": 21,
+    "elements": [
+      "O",
+      "V"
+    ]
+  },
+  {
+    "formula": "CrCl3",
+    "count": 20,
+    "elements": [
+      "Cl",
+      "Cr"
+    ]
+  },
+  {
+    "formula": "KAs",
+    "count": 19,
+    "elements": [
+      "As",
+      "K"
+    ]
+  },
+  {
+    "formula": "As",
+    "count": 18,
+    "elements": [
+      "As"
+    ]
+  },
+  {
+    "formula": "D2O",
+    "count": 18,
+    "elements": [
+      "H",
+      "O"
+    ]
+  },
+  {
+    "formula": "HBr",
+    "count": 18,
+    "elements": [
+      "Br",
+      "H"
+    ]
+  },
+  {
+    "formula": "Cd",
+    "count": 15,
+    "elements": [
+      "Cd"
+    ]
+  },
+  {
+    "formula": "Fe",
+    "count": 15,
+    "elements": [
+      "Fe"
+    ]
+  },
+  {
+    "formula": "C",
+    "count": 13,
+    "elements": [
+      "C"
+    ]
+  },
+  {
+    "formula": "H2",
+    "count": 13,
+    "elements": [
+      "H"
+    ]
+  },
+  {
+    "formula": "KI",
+    "count": 13,
+    "elements": [
+      "I",
+      "K"
+    ]
+  },
+  {
+    "formula": "Li2MoO4",
+    "count": 13,
+    "elements": [
+      "Li",
+      "Mo",
+      "O"
+    ]
+  },
+  {
+    "formula": "Na2CO3",
+    "count": 13,
+    "elements": [
+      "C",
+      "Na",
+      "O"
+    ]
+  },
+  {
+    "formula": "CaCl2",
+    "count": 12,
+    "elements": [
+      "Ca",
+      "Cl"
+    ]
+  },
+  {
+    "formula": "Fe2O3",
+    "count": 12,
+    "elements": [
+      "Fe",
+      "O"
+    ]
+  },
+  {
+    "formula": "MoO3",
+    "count": 12,
+    "elements": [
+      "Mo",
+      "O"
+    ]
+  },
+  {
+    "formula": "Na2O",
+    "count": 12,
+    "elements": [
+      "Na",
+      "O"
+    ]
+  },
+  {
+    "formula": "PbCl2",
+    "count": 12,
+    "elements": [
+      "Cl",
+      "Pb"
+    ]
+  },
+  {
+    "formula": "PbO2",
+    "count": 12,
+    "elements": [
+      "O",
+      "Pb"
+    ]
+  },
+  {
+    "formula": "SnI4",
+    "count": 11,
+    "elements": [
+      "I",
+      "Sn"
+    ]
+  },
+  {
+    "formula": "Co",
+    "count": 10,
+    "elements": [
+      "Co"
+    ]
+  },
+  {
+    "formula": "Na",
+    "count": 10,
+    "elements": [
+      "Na"
+    ]
+  },
+  {
+    "formula": "Li",
+    "count": 9,
+    "elements": [
+      "Li"
+    ]
+  },
+  {
+    "formula": "Na2B4O7",
+    "count": 9,
+    "elements": [
+      "B",
+      "Na",
+      "O"
+    ]
+  },
+  {
+    "formula": "NaI",
+    "count": 9,
+    "elements": [
+      "I",
+      "Na"
+    ]
+  },
+  {
+    "formula": "C2H6O",
+    "count": 8,
+    "elements": [
+      "C",
+      "H",
+      "O"
+    ]
+  },
+  {
+    "formula": "C2H6O2",
+    "count": 8,
+    "elements": [
+      "C",
+      "H",
+      "O"
+    ]
+  },
+  {
+    "formula": "Cu2O",
+    "count": 8,
+    "elements": [
+      "Cu",
+      "O"
+    ]
+  },
+  {
+    "formula": "ICl3",
+    "count": 8,
+    "elements": [
+      "Cl",
+      "I"
+    ]
+  },
+  {
+    "formula": "K",
+    "count": 8,
+    "elements": [
+      "K"
+    ]
+  },
+  {
+    "formula": "Li2WO4",
+    "count": 8,
+    "elements": [
+      "Li",
+      "O",
+      "W"
+    ]
+  },
+  {
+    "formula": "LiBO2",
+    "count": 8,
+    "elements": [
+      "B",
+      "Li",
+      "O"
+    ]
+  },
+  {
+    "formula": "NH3",
+    "count": 8,
+    "elements": [
+      "H",
+      "N"
+    ]
+  },
+  {
+    "formula": "NH4Cl",
+    "count": 8,
+    "elements": [
+      "Cl",
+      "H",
+      "N"
+    ]
+  },
+  {
+    "formula": "Ni",
+    "count": 8,
+    "elements": [
+      "Ni"
+    ]
+  },
+  {
+    "formula": "TeBr4",
+    "count": 8,
+    "elements": [
+      "Br",
+      "Te"
+    ]
+  },
+  {
+    "formula": "WO3",
+    "count": 8,
+    "elements": [
+      "O",
+      "W"
+    ]
+  },
+  {
+    "formula": "Ba",
+    "count": 7,
+    "elements": [
+      "Ba"
+    ]
+  },
+  {
+    "formula": "NaF",
+    "count": 7,
+    "elements": [
+      "F",
+      "Na"
+    ]
+  },
+  {
+    "formula": "PtCl2",
+    "count": 7,
+    "elements": [
+      "Cl",
+      "Pt"
+    ]
+  },
+  {
+    "formula": "SeCl2",
+    "count": 7,
+    "elements": [
+      "Cl",
+      "Se"
+    ]
+  },
+  {
+    "formula": "Al2O3",
+    "count": 6,
+    "elements": [
+      "Al",
+      "O"
+    ]
+  },
+  {
+    "formula": "CF4",
+    "count": 6,
+    "elements": [
+      "C",
+      "F"
+    ]
+  },
+  {
+    "formula": "CaAs",
+    "count": 6,
+    "elements": [
+      "As",
+      "Ca"
+    ]
+  },
+  {
+    "formula": "Ce",
+    "count": 6,
+    "elements": [
+      "Ce"
+    ]
+  },
+  {
+    "formula": "Ge",
+    "count": 6,
+    "elements": [
+      "Ge"
+    ]
+  },
+  {
+    "formula": "HF",
+    "count": 6,
+    "elements": [
+      "F",
+      "H"
+    ]
+  },
+  {
+    "formula": "Li2CO3",
+    "count": 6,
+    "elements": [
+      "C",
+      "Li",
+      "O"
+    ]
+  },
+  {
+    "formula": "MgO",
+    "count": 6,
+    "elements": [
+      "Mg",
+      "O"
+    ]
+  },
+  {
+    "formula": "BaZrO3",
+    "count": 5,
+    "elements": [
+      "Ba",
+      "O",
+      "Zr"
+    ]
+  },
+  {
+    "formula": "C2H5OH",
+    "count": 5,
+    "elements": [
+      "C",
+      "H",
+      "O"
+    ]
+  },
+  {
+    "formula": "C2H6OS",
+    "count": 5,
+    "elements": [
+      "C",
+      "H",
+      "O",
+      "S"
+    ]
+  },
+  {
+    "formula": "C3H6O",
+    "count": 5,
+    "elements": [
+      "C",
+      "H",
+      "O"
+    ]
+  },
+  {
+    "formula": "CH3NO2",
+    "count": 5,
+    "elements": [
+      "C",
+      "H",
+      "N",
+      "O"
+    ]
+  },
+  {
+    "formula": "CO2",
+    "count": 5,
+    "elements": [
+      "C",
+      "O"
+    ]
+  },
+  {
+    "formula": "Ca",
+    "count": 5,
+    "elements": [
+      "Ca"
+    ]
+  },
+  {
+    "formula": "H2SO4",
+    "count": 5,
+    "elements": [
+      "H",
+      "O",
+      "S"
+    ]
+  },
+  {
+    "formula": "K2Mo3O10",
+    "count": 5,
+    "elements": [
+      "K",
+      "Mo",
+      "O"
+    ]
+  },
+  {
+    "formula": "KClO4",
+    "count": 5,
+    "elements": [
+      "Cl",
+      "K",
+      "O"
+    ]
+  },
+  {
+    "formula": "KOH",
+    "count": 5,
+    "elements": [
+      "H",
+      "K",
+      "O"
+    ]
+  },
+  {
+    "formula": "Mg",
+    "count": 5,
+    "elements": [
+      "Mg"
+    ]
+  },
+  {
+    "formula": "N2",
+    "count": 5,
+    "elements": [
+      "N"
+    ]
+  },
+  {
+    "formula": "Na2SiO3",
+    "count": 5,
+    "elements": [
+      "Na",
+      "O",
+      "Si"
+    ]
+  },
+  {
+    "formula": "Pb2V2O7",
+    "count": 5,
+    "elements": [
+      "O",
+      "Pb",
+      "V"
+    ]
+  },
+  {
+    "formula": "Pt",
+    "count": 5,
+    "elements": [
+      "Pt"
+    ]
+  },
+  {
+    "formula": "Zn",
+    "count": 5,
+    "elements": [
+      "Zn"
+    ]
+  },
+  {
+    "formula": "Ag2O",
+    "count": 4,
+    "elements": [
+      "Ag",
+      "O"
+    ]
+  },
+  {
+    "formula": "AgCu",
+    "count": 4,
+    "elements": [
+      "Ag",
+      "Cu"
+    ]
+  },
+  {
+    "formula": "BaCO3",
+    "count": 4,
+    "elements": [
+      "Ba",
+      "C",
+      "O"
+    ]
+  },
+  {
+    "formula": "BaCuO2",
+    "count": 4,
+    "elements": [
+      "Ba",
+      "Cu",
+      "O"
+    ]
+  },
+  {
+    "formula": "BaF2",
+    "count": 4,
+    "elements": [
+      "Ba",
+      "F"
+    ]
+  },
+  {
+    "formula": "C2H3N",
+    "count": 4,
+    "elements": [
+      "C",
+      "H",
+      "N"
+    ]
+  },
+  {
+    "formula": "CH3OH",
+    "count": 4,
+    "elements": [
+      "C",
+      "H",
+      "O"
+    ]
+  },
+  {
+    "formula": "CH4O",
+    "count": 4,
+    "elements": [
+      "C",
+      "H",
+      "O"
+    ]
+  },
+  {
+    "formula": "CdCl2",
+    "count": 4,
+    "elements": [
+      "Cd",
+      "Cl"
+    ]
+  },
+  {
+    "formula": "CoAs",
+    "count": 4,
+    "elements": [
+      "As",
+      "Co"
+    ]
+  },
+  {
+    "formula": "Gd2(SO4)3(H2O)8",
+    "count": 4,
+    "elements": [
+      "Gd",
+      "H",
+      "O",
+      "S"
+    ]
+  },
+  {
+    "formula": "H3BO3",
+    "count": 4,
+    "elements": [
+      "B",
+      "H",
+      "O"
+    ]
+  },
+  {
+    "formula": "Na2WO4",
+    "count": 4,
+    "elements": [
+      "Na",
+      "O",
+      "W"
+    ]
+  },
+  {
+    "formula": "Rb",
+    "count": 4,
+    "elements": [
+      "Rb"
+    ]
+  },
+  {
+    "formula": "TeO2",
+    "count": 4,
+    "elements": [
+      "O",
+      "Te"
+    ]
+  },
+  {
+    "formula": "C2H8N2",
+    "count": 3,
+    "elements": [
+      "C",
+      "H",
+      "N"
+    ]
+  },
+  {
+    "formula": "Cl",
+    "count": 3,
+    "elements": [
+      "Cl"
+    ]
+  },
+  {
+    "formula": "CoBr2",
+    "count": 3,
+    "elements": [
+      "Br",
+      "Co"
+    ]
+  },
+  {
+    "formula": "CoI2",
+    "count": 3,
+    "elements": [
+      "Co",
+      "I"
+    ]
+  },
+  {
+    "formula": "Cs",
+    "count": 3,
+    "elements": [
+      "Cs"
+    ]
+  },
+  {
+    "formula": "Fe1.9Ni0.05Cr0.05As2",
+    "count": 3,
+    "elements": [
+      "As",
+      "Cr",
+      "Fe",
+      "Ni"
+    ]
+  },
+  {
+    "formula": "Ga2O3",
+    "count": 3,
+    "elements": [
+      "Ga",
+      "O"
+    ]
+  },
+  {
+    "formula": "He",
+    "count": 3,
+    "elements": [
+      "He"
+    ]
+  },
+  {
+    "formula": "HgCl2",
+    "count": 3,
+    "elements": [
+      "Cl",
+      "Hg"
+    ]
+  },
+  {
+    "formula": "I",
+    "count": 3,
+    "elements": [
+      "I"
+    ]
+  },
+  {
+    "formula": "K2Mo2O7",
+    "count": 3,
+    "elements": [
+      "K",
+      "Mo",
+      "O"
+    ]
+  },
+  {
+    "formula": "KVO3",
+    "count": 3,
+    "elements": [
+      "K",
+      "O",
+      "V"
+    ]
+  },
+  {
+    "formula": "NH3(H2O)",
+    "count": 3,
+    "elements": [
+      "H",
+      "N",
+      "O"
+    ]
+  },
+  {
+    "formula": "Na2B4O7(H2O)10",
+    "count": 3,
+    "elements": [
+      "B",
+      "H",
+      "Na",
+      "O"
+    ]
+  },
+  {
+    "formula": "Na2MoO4",
+    "count": 3,
+    "elements": [
+      "Mo",
+      "Na",
+      "O"
+    ]
+  },
+  {
+    "formula": "NaBH4",
+    "count": 3,
+    "elements": [
+      "B",
+      "H",
+      "Na"
+    ]
+  },
+  {
+    "formula": "NaO",
+    "count": 3,
+    "elements": [
+      "Na",
+      "O"
+    ]
+  },
+  {
+    "formula": "Pb(NH4)2Cl6",
+    "count": 3,
+    "elements": [
+      "Cl",
+      "H",
+      "N",
+      "Pb"
+    ]
+  },
+  {
+    "formula": "PbBr2",
+    "count": 3,
+    "elements": [
+      "Br",
+      "Pb"
+    ]
+  },
+  {
+    "formula": "PbI2",
+    "count": 3,
+    "elements": [
+      "I",
+      "Pb"
+    ]
+  },
+  {
+    "formula": "RbAs",
+    "count": 3,
+    "elements": [
+      "As",
+      "Rb"
+    ]
+  },
+  {
+    "formula": "TaBr5",
+    "count": 3,
+    "elements": [
+      "Br",
+      "Ta"
+    ]
+  },
+  {
+    "formula": "Tl2O3",
+    "count": 3,
+    "elements": [
+      "O",
+      "Tl"
+    ]
+  },
+  {
+    "formula": "AgO",
+    "count": 2,
+    "elements": [
+      "Ag",
+      "O"
+    ]
+  },
+  {
+    "formula": "Al88Si12",
+    "count": 2,
+    "elements": [
+      "Al",
+      "Si"
+    ]
+  },
+  {
+    "formula": "AuSn",
+    "count": 2,
+    "elements": [
+      "Au",
+      "Sn"
+    ]
+  },
+  {
+    "formula": "Br",
+    "count": 2,
+    "elements": [
+      "Br"
+    ]
+  },
+  {
+    "formula": "C6H5Cl",
+    "count": 2,
+    "elements": [
+      "C",
+      "Cl",
+      "H"
+    ]
+  },
+  {
+    "formula": "C7H8",
+    "count": 2,
+    "elements": [
+      "C",
+      "H"
+    ]
+  },
+  {
+    "formula": "CBr4",
+    "count": 2,
+    "elements": [
+      "Br",
+      "C"
+    ]
+  },
+  {
+    "formula": "CH4N2O",
+    "count": 2,
+    "elements": [
+      "C",
+      "H",
+      "N",
+      "O"
+    ]
+  },
+  {
+    "formula": "CS2",
+    "count": 2,
+    "elements": [
+      "C",
+      "S"
+    ]
+  },
+  {
+    "formula": "CdO",
+    "count": 2,
+    "elements": [
+      "Cd",
+      "O"
+    ]
+  },
+  {
+    "formula": "Cr",
+    "count": 2,
+    "elements": [
+      "Cr"
+    ]
+  },
+  {
+    "formula": "CsAs",
+    "count": 2,
+    "elements": [
+      "As",
+      "Cs"
+    ]
+  },
+  {
+    "formula": "D2",
+    "count": 2,
+    "elements": [
+      "H"
+    ]
+  },
+  {
+    "formula": "IrO2",
+    "count": 2,
+    "elements": [
+      "Ir",
+      "O"
+    ]
+  },
+  {
+    "formula": "K2B4O7",
+    "count": 2,
+    "elements": [
+      "B",
+      "K",
+      "O"
+    ]
+  },
+  {
+    "formula": "K2Cr2O7",
+    "count": 2,
+    "elements": [
+      "Cr",
+      "K",
+      "O"
+    ]
+  },
+  {
+    "formula": "K2Mo4O13",
+    "count": 2,
+    "elements": [
+      "K",
+      "Mo",
+      "O"
+    ]
+  },
+  {
+    "formula": "K2WO4",
+    "count": 2,
+    "elements": [
+      "K",
+      "O",
+      "W"
+    ]
+  },
+  {
+    "formula": "KOH(H2O)6",
+    "count": 2,
+    "elements": [
+      "H",
+      "K",
+      "O"
+    ]
+  },
+  {
+    "formula": "La",
+    "count": 2,
+    "elements": [
+      "La"
+    ]
+  },
+  {
+    "formula": "Li2O",
+    "count": 2,
+    "elements": [
+      "Li",
+      "O"
+    ]
+  },
+  {
+    "formula": "Li3VO4",
+    "count": 2,
+    "elements": [
+      "Li",
+      "O",
+      "V"
+    ]
+  },
+  {
+    "formula": "LiOH",
+    "count": 2,
+    "elements": [
+      "H",
+      "Li",
+      "O"
+    ]
+  },
+  {
+    "formula": "LiVO3",
+    "count": 2,
+    "elements": [
+      "Li",
+      "O",
+      "V"
+    ]
+  },
+  {
+    "formula": "MnAs",
+    "count": 2,
+    "elements": [
+      "As",
+      "Mn"
+    ]
+  },
+  {
+    "formula": "NH4I",
+    "count": 2,
+    "elements": [
+      "H",
+      "I",
+      "N"
+    ]
+  },
+  {
+    "formula": "NaBr",
+    "count": 2,
+    "elements": [
+      "Br",
+      "Na"
+    ]
+  },
+  {
+    "formula": "NaVO3",
+    "count": 2,
+    "elements": [
+      "Na",
+      "O",
+      "V"
+    ]
+  },
+  {
+    "formula": "NbI5",
+    "count": 2,
+    "elements": [
+      "I",
+      "Nb"
+    ]
+  },
+  {
+    "formula": "Nd",
+    "count": 2,
+    "elements": [
+      "Nd"
+    ]
+  },
+  {
+    "formula": "NiO",
+    "count": 2,
+    "elements": [
+      "Ni",
+      "O"
+    ]
+  },
+  {
+    "formula": "Pb2P2O7",
+    "count": 2,
+    "elements": [
+      "O",
+      "P",
+      "Pb"
+    ]
+  },
+  {
+    "formula": "Se",
+    "count": 2,
+    "elements": [
+      "Se"
+    ]
+  },
+  {
+    "formula": "SeCl4",
+    "count": 2,
+    "elements": [
+      "Cl",
+      "Se"
+    ]
+  },
+  {
+    "formula": "Si",
+    "count": 2,
+    "elements": [
+      "Si"
+    ]
+  },
+  {
+    "formula": "SnS2",
+    "count": 2,
+    "elements": [
+      "S",
+      "Sn"
+    ]
+  },
+  {
+    "formula": "SrCl3",
+    "count": 2,
+    "elements": [
+      "Cl",
+      "Sr"
+    ]
+  },
+  {
+    "formula": "Ta",
+    "count": 2,
+    "elements": [
+      "Ta"
+    ]
+  },
+  {
+    "formula": "Y",
+    "count": 2,
+    "elements": [
+      "Y"
+    ]
+  },
+  {
+    "formula": "Ag",
+    "count": 1,
+    "elements": [
+      "Ag"
+    ]
+  },
+  {
+    "formula": "AgAs",
+    "count": 1,
+    "elements": [
+      "Ag",
+      "As"
+    ]
+  },
+  {
+    "formula": "Al0.73Ge0.27",
+    "count": 1,
+    "elements": [
+      "Al",
+      "Ge"
+    ]
+  },
+  {
+    "formula": "Al0.995Mo0.005",
+    "count": 1,
+    "elements": [
+      "Al",
+      "Mo"
+    ]
+  },
+  {
+    "formula": "Ba2As3",
+    "count": 1,
+    "elements": [
+      "As",
+      "Ba"
+    ]
+  },
+  {
+    "formula": "BaCu3O4",
+    "count": 1,
+    "elements": [
+      "Ba",
+      "Cu",
+      "O"
+    ]
+  },
+  {
+    "formula": "BaSb",
+    "count": 1,
+    "elements": [
+      "Ba",
+      "Sb"
+    ]
+  },
+  {
+    "formula": "Bi2CuO4",
+    "count": 1,
+    "elements": [
+      "Bi",
+      "Cu",
+      "O"
+    ]
+  },
+  {
+    "formula": "Bi2Te3",
+    "count": 1,
+    "elements": [
+      "Bi",
+      "Te"
+    ]
+  },
+  {
+    "formula": "BiBr3",
+    "count": 1,
+    "elements": [
+      "Bi",
+      "Br"
+    ]
+  },
+  {
+    "formula": "BiCl3",
+    "count": 1,
+    "elements": [
+      "Bi",
+      "Cl"
+    ]
+  },
+  {
+    "formula": "C2H3NaO2(NaOAc)",
+    "count": 1,
+    "elements": [
+      "Ac",
+      "C",
+      "H",
+      "Na",
+      "O"
+    ]
+  },
+  {
+    "formula": "C2H4O2",
+    "count": 1,
+    "elements": [
+      "C",
+      "H",
+      "O"
+    ]
+  },
+  {
+    "formula": "C4H6O2",
+    "count": 1,
+    "elements": [
+      "C",
+      "H",
+      "O"
+    ]
+  },
+  {
+    "formula": "C7H8O",
+    "count": 1,
+    "elements": [
+      "C",
+      "H",
+      "O"
+    ]
+  },
+  {
+    "formula": "CCl4",
+    "count": 1,
+    "elements": [
+      "C",
+      "Cl"
+    ]
+  },
+  {
+    "formula": "CD3OD",
+    "count": 1,
+    "elements": [
+      "C",
+      "H",
+      "O"
+    ]
+  },
+  {
+    "formula": "CH3(CH2)8COOH",
+    "count": 1,
+    "elements": [
+      "C",
+      "H",
+      "O"
+    ]
+  },
+  {
+    "formula": "CH3(CH2)9NH2",
+    "count": 1,
+    "elements": [
+      "C",
+      "H",
+      "N"
+    ]
+  },
+  {
+    "formula": "CO",
+    "count": 1,
+    "elements": [
+      "C",
+      "O"
+    ]
+  },
+  {
+    "formula": "CaSi",
+    "count": 1,
+    "elements": [
+      "Ca",
+      "Si"
+    ]
+  },
+  {
+    "formula": "Cd3B2O6",
+    "count": 1,
+    "elements": [
+      "B",
+      "Cd",
+      "O"
+    ]
+  },
+  {
+    "formula": "CdCu",
+    "count": 1,
+    "elements": [
+      "Cd",
+      "Cu"
+    ]
+  },
+  {
+    "formula": "Ce0.78Ni0.22",
+    "count": 1,
+    "elements": [
+      "Ce",
+      "Ni"
+    ]
+  },
+  {
+    "formula": "CeO2",
+    "count": 1,
+    "elements": [
+      "Ce",
+      "O"
+    ]
+  },
+  {
+    "formula": "CoCl2",
+    "count": 1,
+    "elements": [
+      "Cl",
+      "Co"
+    ]
+  },
+  {
+    "formula": "CoO",
+    "count": 1,
+    "elements": [
+      "Co",
+      "O"
+    ]
+  },
+  {
+    "formula": "Cr2(SO4)3(H2O)18",
+    "count": 1,
+    "elements": [
+      "Cr",
+      "H",
+      "O",
+      "S"
+    ]
+  },
+  {
+    "formula": "CrAs",
+    "count": 1,
+    "elements": [
+      "As",
+      "Cr"
+    ]
+  },
+  {
+    "formula": "Cs2Mo2O7",
+    "count": 1,
+    "elements": [
+      "Cs",
+      "Mo",
+      "O"
+    ]
+  },
+  {
+    "formula": "Cs2MoO4",
+    "count": 1,
+    "elements": [
+      "Cs",
+      "Mo",
+      "O"
+    ]
+  },
+  {
+    "formula": "Cs4P2O7",
+    "count": 1,
+    "elements": [
+      "Cs",
+      "O",
+      "P"
+    ]
+  },
+  {
+    "formula": "CsOH",
+    "count": 1,
+    "elements": [
+      "Cs",
+      "H",
+      "O"
+    ]
+  },
+  {
+    "formula": "CuCl2",
+    "count": 1,
+    "elements": [
+      "Cl",
+      "Cu"
+    ]
+  },
+  {
+    "formula": "CuCl2(H2O)2",
+    "count": 1,
+    "elements": [
+      "Cl",
+      "Cu",
+      "H",
+      "O"
+    ]
+  },
+  {
+    "formula": "CuI",
+    "count": 1,
+    "elements": [
+      "Cu",
+      "I"
+    ]
+  },
+  {
+    "formula": "CuO2",
+    "count": 1,
+    "elements": [
+      "Cu",
+      "O"
+    ]
+  },
+  {
+    "formula": "D2SO4",
+    "count": 1,
+    "elements": [
+      "H",
+      "O",
+      "S"
+    ]
+  },
+  {
+    "formula": "FeBr2",
+    "count": 1,
+    "elements": [
+      "Br",
+      "Fe"
+    ]
+  },
+  {
+    "formula": "Gd",
+    "count": 1,
+    "elements": [
+      "Gd"
+    ]
+  },
+  {
+    "formula": "GeI4",
+    "count": 1,
+    "elements": [
+      "Ge",
+      "I"
+    ]
+  },
+  {
+    "formula": "H218O",
+    "count": 1,
+    "elements": [
+      "H",
+      "O"
+    ]
+  },
+  {
+    "formula": "H2O2",
+    "count": 1,
+    "elements": [
+      "H",
+      "O"
+    ]
+  },
+  {
+    "formula": "H3PO2",
+    "count": 1,
+    "elements": [
+      "H",
+      "O",
+      "P"
+    ]
+  },
+  {
+    "formula": "HBF4",
+    "count": 1,
+    "elements": [
+      "B",
+      "F",
+      "H"
+    ]
+  },
+  {
+    "formula": "HClO4",
+    "count": 1,
+    "elements": [
+      "Cl",
+      "H",
+      "O"
+    ]
+  },
+  {
+    "formula": "HI",
+    "count": 1,
+    "elements": [
+      "H",
+      "I"
+    ]
+  },
+  {
+    "formula": "HNO3",
+    "count": 1,
+    "elements": [
+      "H",
+      "N",
+      "O"
+    ]
+  },
+  {
+    "formula": "In0.3Ag0.7Cu",
+    "count": 1,
+    "elements": [
+      "Ag",
+      "Cu",
+      "In"
+    ]
+  },
+  {
+    "formula": "InBr3",
+    "count": 1,
+    "elements": [
+      "Br",
+      "In"
+    ]
+  },
+  {
+    "formula": "Ir",
+    "count": 1,
+    "elements": [
+      "Ir"
+    ]
+  },
+  {
+    "formula": "IrGe",
+    "count": 1,
+    "elements": [
+      "Ge",
+      "Ir"
+    ]
+  },
+  {
+    "formula": "K2MoO4",
+    "count": 1,
+    "elements": [
+      "K",
+      "Mo",
+      "O"
+    ]
+  },
+  {
+    "formula": "KCO3",
+    "count": 1,
+    "elements": [
+      "C",
+      "K",
+      "O"
+    ]
+  },
+  {
+    "formula": "KOD",
+    "count": 1,
+    "elements": [
+      "H",
+      "K",
+      "O"
+    ]
+  },
+  {
+    "formula": "KSCN",
+    "count": 1,
+    "elements": [
+      "C",
+      "K",
+      "N",
+      "S"
+    ]
+  },
+  {
+    "formula": "Li2B4O7",
+    "count": 1,
+    "elements": [
+      "B",
+      "Li",
+      "O"
+    ]
+  },
+  {
+    "formula": "Li2SO4",
+    "count": 1,
+    "elements": [
+      "Li",
+      "O",
+      "S"
+    ]
+  },
+  {
+    "formula": "LiAs",
+    "count": 1,
+    "elements": [
+      "As",
+      "Li"
+    ]
+  },
+  {
+    "formula": "LiF",
+    "count": 1,
+    "elements": [
+      "F",
+      "Li"
+    ]
+  },
+  {
+    "formula": "LiI",
+    "count": 1,
+    "elements": [
+      "I",
+      "Li"
+    ]
+  },
+  {
+    "formula": "MgCu",
+    "count": 1,
+    "elements": [
+      "Cu",
+      "Mg"
+    ]
+  },
+  {
+    "formula": "MnCl2",
+    "count": 1,
+    "elements": [
+      "Cl",
+      "Mn"
+    ]
+  },
+  {
+    "formula": "MoCl5",
+    "count": 1,
+    "elements": [
+      "Cl",
+      "Mo"
+    ]
+  },
+  {
+    "formula": "N2H4(H2O)",
+    "count": 1,
+    "elements": [
+      "H",
+      "N",
+      "O"
+    ]
+  },
+  {
+    "formula": "N2H6SO4",
+    "count": 1,
+    "elements": [
+      "H",
+      "N",
+      "O",
+      "S"
+    ]
+  },
+  {
+    "formula": "ND3",
+    "count": 1,
+    "elements": [
+      "H",
+      "N"
+    ]
+  },
+  {
+    "formula": "NH2CH2CH2NH2",
+    "count": 1,
+    "elements": [
+      "C",
+      "H",
+      "N"
+    ]
+  },
+  {
+    "formula": "NH4HF2",
+    "count": 1,
+    "elements": [
+      "F",
+      "H",
+      "N"
+    ]
+  },
+  {
+    "formula": "NH4OH",
+    "count": 1,
+    "elements": [
+      "H",
+      "N",
+      "O"
+    ]
+  },
+  {
+    "formula": "NO3",
+    "count": 1,
+    "elements": [
+      "N",
+      "O"
+    ]
+  },
+  {
+    "formula": "Na2Mo2O7",
+    "count": 1,
+    "elements": [
+      "Mo",
+      "Na",
+      "O"
+    ]
+  },
+  {
+    "formula": "Na2O2",
+    "count": 1,
+    "elements": [
+      "Na",
+      "O"
+    ]
+  },
+  {
+    "formula": "Na2SO4",
+    "count": 1,
+    "elements": [
+      "Na",
+      "O",
+      "S"
+    ]
+  },
+  {
+    "formula": "Na2W2O7",
+    "count": 1,
+    "elements": [
+      "Na",
+      "O",
+      "W"
+    ]
+  },
+  {
+    "formula": "Na2[B4O7](H2O)10",
+    "count": 1,
+    "elements": [
+      "B",
+      "H",
+      "Na",
+      "O"
+    ]
+  },
+  {
+    "formula": "NaSb",
+    "count": 1,
+    "elements": [
+      "Na",
+      "Sb"
+    ]
+  },
+  {
+    "formula": "NaV3O8",
+    "count": 1,
+    "elements": [
+      "Na",
+      "O",
+      "V"
+    ]
+  },
+  {
+    "formula": "NdCl3",
+    "count": 1,
+    "elements": [
+      "Cl",
+      "Nd"
+    ]
+  },
+  {
+    "formula": "Ni3B",
+    "count": 1,
+    "elements": [
+      "B",
+      "Ni"
+    ]
+  },
+  {
+    "formula": "NiAs",
+    "count": 1,
+    "elements": [
+      "As",
+      "Ni"
+    ]
+  },
+  {
+    "formula": "NiBr2",
+    "count": 1,
+    "elements": [
+      "Br",
+      "Ni"
+    ]
+  },
+  {
+    "formula": "OH",
+    "count": 1,
+    "elements": [
+      "H",
+      "O"
+    ]
+  },
+  {
+    "formula": "P2O5",
+    "count": 1,
+    "elements": [
+      "O",
+      "P"
+    ]
+  },
+  {
+    "formula": "P3HT",
+    "count": 1,
+    "elements": [
+      "H",
+      "P"
+    ]
+  },
+  {
+    "formula": "PBr5",
+    "count": 1,
+    "elements": [
+      "Br",
+      "P"
+    ]
+  },
+  {
+    "formula": "PVP",
+    "count": 1,
+    "elements": [
+      "P",
+      "V"
+    ]
+  },
+  {
+    "formula": "Pb3O4",
+    "count": 1,
+    "elements": [
+      "O",
+      "Pb"
+    ]
+  },
+  {
+    "formula": "PbHPO4",
+    "count": 1,
+    "elements": [
+      "H",
+      "O",
+      "P",
+      "Pb"
+    ]
+  },
+  {
+    "formula": "PdCl2",
+    "count": 1,
+    "elements": [
+      "Cl",
+      "Pd"
+    ]
+  },
+  {
+    "formula": "PdGe",
+    "count": 1,
+    "elements": [
+      "Ge",
+      "Pd"
+    ]
+  },
+  {
+    "formula": "PdSb",
+    "count": 1,
+    "elements": [
+      "Pd",
+      "Sb"
+    ]
+  },
+  {
+    "formula": "Rb2Mo2O7",
+    "count": 1,
+    "elements": [
+      "Mo",
+      "O",
+      "Rb"
+    ]
+  },
+  {
+    "formula": "Rb5As3O10",
+    "count": 1,
+    "elements": [
+      "As",
+      "O",
+      "Rb"
+    ]
+  },
+  {
+    "formula": "RbI",
+    "count": 1,
+    "elements": [
+      "I",
+      "Rb"
+    ]
+  },
+  {
+    "formula": "RbOH",
+    "count": 1,
+    "elements": [
+      "H",
+      "O",
+      "Rb"
+    ]
+  },
+  {
+    "formula": "Rh0.25Ge0.75",
+    "count": 1,
+    "elements": [
+      "Ge",
+      "Rh"
+    ]
+  },
+  {
+    "formula": "S",
+    "count": 1,
+    "elements": [
+      "S"
+    ]
+  },
+  {
+    "formula": "SiCl4",
+    "count": 1,
+    "elements": [
+      "Cl",
+      "Si"
+    ]
+  },
+  {
+    "formula": "SnBr2",
+    "count": 1,
+    "elements": [
+      "Br",
+      "Sn"
+    ]
+  },
+  {
+    "formula": "SnCl2",
+    "count": 1,
+    "elements": [
+      "Cl",
+      "Sn"
+    ]
+  },
+  {
+    "formula": "SrCO3",
+    "count": 1,
+    "elements": [
+      "C",
+      "O",
+      "Sr"
+    ]
+  },
+  {
+    "formula": "SrCl2(H2O)6",
+    "count": 1,
+    "elements": [
+      "Cl",
+      "H",
+      "O",
+      "Sr"
+    ]
+  },
+  {
+    "formula": "SrF2",
+    "count": 1,
+    "elements": [
+      "F",
+      "Sr"
+    ]
+  },
+  {
+    "formula": "SrV2O6",
+    "count": 1,
+    "elements": [
+      "O",
+      "Sr",
+      "V"
+    ]
+  },
+  {
+    "formula": "TaCl5",
+    "count": 1,
+    "elements": [
+      "Cl",
+      "Ta"
+    ]
+  },
+  {
+    "formula": "TeI4",
+    "count": 1,
+    "elements": [
+      "I",
+      "Te"
+    ]
+  },
+  {
+    "formula": "Ti",
+    "count": 1,
+    "elements": [
+      "Ti"
+    ]
+  },
+  {
+    "formula": "Tl",
+    "count": 1,
+    "elements": [
+      "Tl"
+    ]
+  },
+  {
+    "formula": "Tl2SO4",
+    "count": 1,
+    "elements": [
+      "O",
+      "S",
+      "Tl"
+    ]
+  },
+  {
+    "formula": "TlCu",
+    "count": 1,
+    "elements": [
+      "Cu",
+      "Tl"
+    ]
+  },
+  {
+    "formula": "ZnCu",
+    "count": 1,
+    "elements": [
+      "Cu",
+      "Zn"
+    ]
+  },
+  {
+    "formula": "ZrCl4",
+    "count": 1,
+    "elements": [
+      "Cl",
+      "Zr"
+    ]
+  }
+]

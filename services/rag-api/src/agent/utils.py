@@ -40,6 +40,7 @@ def default_runtime(raw: dict[str, Any] | None = None) -> RuntimeOptions:
         mode = "hybrid"
     return {
         "force_retrieve": bool(raw.get("force_retrieve", False)),
+        "evidence_only": bool(raw.get("evidence_only", False)),
         "top_k": top_k,
         "retrieval_mode": mode,
         "model": raw.get("model"),
@@ -65,6 +66,8 @@ def default_short_memory() -> ShortMemory:
         "recent_focus": None,
         "confirmed_slots": {},
         "open_questions": [],
+        "material_history": [],
+        "last_turn_kind": None,
     }
 
 
@@ -78,19 +81,27 @@ def clip_text(value: str, max_chars: int) -> str:
 def bounded_active_context(active_context: ActiveContext, max_items: int) -> ActiveContext:
     max_items = max(1, max_items)
     return {
-        "active_materials": [clip_text(str(item), 120) for item in active_context["active_materials"][-max_items:]],
-        "active_formulas": [clip_text(str(item), 80) for item in active_context["active_formulas"][-max_items:]],
+        "active_materials": [
+            clip_text(str(item), 120) for item in active_context["active_materials"][-max_items:]
+        ],
+        "active_formulas": [
+            clip_text(str(item), 80) for item in active_context["active_formulas"][-max_items:]
+        ],
         "active_growth_methods": [
-            clip_text(str(item), 80) for item in active_context["active_growth_methods"][-max_items:]
+            clip_text(str(item), 80)
+            for item in active_context["active_growth_methods"][-max_items:]
         ],
         "active_constraints": [
             clip_text(str(item), 200) for item in active_context["active_constraints"][-max_items:]
         ],
         "last_retrieval_record_ids": [
-            clip_text(str(item), 120) for item in active_context["last_retrieval_record_ids"][-max_items:]
+            clip_text(str(item), 120)
+            for item in active_context["last_retrieval_record_ids"][-max_items:]
         ],
         "current_task": (
-            clip_text(str(active_context["current_task"]), 120) if active_context["current_task"] else None
+            clip_text(str(active_context["current_task"]), 120)
+            if active_context["current_task"]
+            else None
         ),
     }
 
@@ -117,7 +128,7 @@ def compact_short_memory(
 
     summary = "\n".join(line for line in summary_lines if line)
     if len(summary) > max_summary_chars:
-        summary = f"...\n{summary[-max(0, max_summary_chars - 5):]}"
+        summary = f"...\n{summary[-max(0, max_summary_chars - 5) :]}"
     return messages[-max_messages:], summary or None
 
 

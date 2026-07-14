@@ -1,0 +1,6 @@
+{
+  "temp_min": -50.0,
+  "temp_max": 3000.0,
+  "temp_bin_size": 10.0,
+  "dur_bin_size": 5.0
+}

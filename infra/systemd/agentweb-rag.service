@@ -1,0 +1,20 @@
+[Unit]
+Description=AgentWeb private RAG Docker Compose stack
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+User=__DEPLOY_USER__
+WorkingDirectory=__DEPLOY_ROOT__
+Environment=COMPOSE_PROJECT_NAME=agentweb-rag
+ExecStartPre=/usr/bin/docker compose --env-file infra/compose/.env.x1c -f infra/compose/docker-compose.x1c.yml config -q
+ExecStart=/usr/bin/docker compose --env-file infra/compose/.env.x1c -f infra/compose/docker-compose.x1c.yml up -d --remove-orphans
+ExecStop=/usr/bin/docker compose --env-file infra/compose/.env.x1c -f infra/compose/docker-compose.x1c.yml down
+TimeoutStartSec=0
+TimeoutStopSec=120
+
+[Install]
+WantedBy=multi-user.target

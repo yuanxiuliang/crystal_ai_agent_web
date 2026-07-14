@@ -13,7 +13,9 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_MINILM_INT8_DIR = PROJECT_ROOT / "models" / "all-MiniLM-L6-v2-int8"
 DEFAULT_EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 DEFAULT_EMBEDDING_DIM = 384
-DEFAULT_MEMORY_DATABASE_URL = f"sqlite:///{PROJECT_ROOT / 'data' / 'runtime' / 'rag-memory.sqlite3'}"
+DEFAULT_MEMORY_DATABASE_URL = (
+    f"sqlite:///{PROJECT_ROOT / 'data' / 'runtime' / 'rag-memory.sqlite3'}"
+)
 
 
 def _project_path(value: str | Path) -> str:
@@ -43,6 +45,13 @@ def _embedding_dimension() -> int:
     if "all-minilm-l6-v2" in model.lower() or "all-minilm-l6-v2-int8" in model_path.lower():
         return DEFAULT_EMBEDDING_DIM
     return int(os.getenv("EMBEDDING_DIM", str(DEFAULT_EMBEDDING_DIM)))
+
+
+def _env_flag(name: str, default: bool) -> bool:
+    value = os.getenv(name)
+    if value is None:
+        return default
+    return value.strip().lower() in {"1", "true", "yes", "on"}
 
 
 @dataclass(frozen=True)
@@ -111,16 +120,41 @@ class Settings:
     memory_summary_max_chars: int = int(os.getenv("MEMORY_SUMMARY_MAX_CHARS", "1200"))
     memory_message_max_chars: int = int(os.getenv("MEMORY_MESSAGE_MAX_CHARS", "4000"))
     memory_active_context_max_items: int = int(os.getenv("MEMORY_ACTIVE_CONTEXT_MAX_ITEMS", "8"))
+    memory_session_material_history_max_items: int = int(
+        os.getenv("MEMORY_SESSION_MATERIAL_HISTORY_MAX_ITEMS", "40")
+    )
     memory_long_max_items_per_user: int = int(os.getenv("MEMORY_LONG_MAX_ITEMS_PER_USER", "200"))
     memory_long_prompt_max_items: int = int(os.getenv("MEMORY_LONG_PROMPT_MAX_ITEMS", "8"))
     memory_long_prompt_max_chars: int = int(os.getenv("MEMORY_LONG_PROMPT_MAX_CHARS", "1800"))
     memory_session_ttl_days: int = int(os.getenv("MEMORY_SESSION_TTL_DAYS", "30"))
     memory_event_ttl_days: int = int(os.getenv("MEMORY_EVENT_TTL_DAYS", "90"))
-    memory_cleanup_interval_seconds: int = int(os.getenv("MEMORY_CLEANUP_INTERVAL_SECONDS", "21600"))
+    memory_cleanup_interval_seconds: int = int(
+        os.getenv("MEMORY_CLEANUP_INTERVAL_SECONDS", "21600")
+    )
     memory_thread_rollover_turns: int = int(os.getenv("MEMORY_THREAD_ROLLOVER_TURNS", "100"))
     memory_semantic_search_enabled: str = os.getenv("MEMORY_SEMANTIC_SEARCH_ENABLED", "auto")
     memory_semantic_candidate_limit: int = int(os.getenv("MEMORY_SEMANTIC_CANDIDATE_LIMIT", "24"))
     memory_worker_poll_seconds: int = int(os.getenv("MEMORY_WORKER_POLL_SECONDS", "3"))
+
+    # The route predictor stays lazy: importing the regular RAG API must not load PyTorch or
+    # the checkpoint until a direct prediction request reaches PredictionService.
+    prediction_enabled: bool = _env_flag("PREDICTION_ENABLED", True)
+    prediction_database_url: str = os.getenv("PREDICTION_DATABASE_URL") or _memory_database_url()
+    prediction_model_dir: str = _project_path(
+        os.getenv(
+            "PREDICTION_MODEL_DIR",
+            "services/rag-api/models/growth-route-transformer/v2.0.0",
+        )
+    )
+    prediction_device: str = os.getenv("PREDICTION_DEVICE", "cpu")
+    prediction_torch_threads: int = int(os.getenv("PREDICTION_TORCH_THREADS", "2"))
+    prediction_max_concurrency: int = int(os.getenv("PREDICTION_MAX_CONCURRENCY", "1"))
+    prediction_beam_size: int = int(os.getenv("PREDICTION_BEAM_SIZE", "20"))
+    prediction_return_sequences: int = int(os.getenv("PREDICTION_RETURN_SEQUENCES", "3"))
+
+    auth_cookie_name: str = os.getenv("AUTH_COOKIE_NAME", "agentweb_session")
+    auth_session_days: int = int(os.getenv("AUTH_SESSION_DAYS", "14"))
+    auth_cookie_secure: bool = _env_flag("AUTH_COOKIE_SECURE", False)
 
 
 settings = Settings()

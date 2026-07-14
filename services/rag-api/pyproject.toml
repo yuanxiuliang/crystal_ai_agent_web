@@ -7,6 +7,7 @@ dependencies = [
   "fastapi>=0.115.0",
   "uvicorn[standard]>=0.30.0",
   "pydantic>=2.8.0",
+  "argon2-cffi>=23.1.0,<26",
   "python-dotenv>=1.0.0",
   "langgraph>=0.2.0",
   "pymilvus>=2.6,<2.7",
@@ -27,6 +28,7 @@ rag-bootstrap = "src.cli.rag_bootstrap:main"
 rag-normalize = "src.cli.rag_normalize:main"
 rag-search = "src.cli.rag_search:main"
 rag-memory-worker = "src.cli.rag_memory_worker:main"
+rag-predict = "src.cli.rag_predict:main"
 rag-memory-init = "src.cli.rag_memory_init:main"
 
 [project.optional-dependencies]
@@ -34,12 +36,29 @@ postgres = [
   "psycopg[binary]>=3.2,<4",
   "langgraph-checkpoint-postgres>=2.0,<4"
 ]
+prediction = [
+  "torch>=2.0,<3",
+  "numpy>=1.26,<3",
+  "pymatgen>=2024.1"
+]
 dev = [
   "pytest>=8.2.0",
   "pytest-asyncio>=0.23.0",
   "ruff>=0.6.0"
 ]
 
+[tool.setuptools]
+package-dir = {"" = "."}
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
+
 [tool.ruff]
 line-length = 100
 target-version = "py311"
+
+[tool.pytest.ini_options]
+markers = [
+  "integration: runs the vendored PyTorch prediction model",
+]

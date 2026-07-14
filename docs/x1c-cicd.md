@@ -58,6 +58,10 @@ key for the clone/fetch path and add a fine-grained, read-only Actions token as
 `GITHUB_API_TOKEN` in `/etc/agentweb-rag-cd.env`. Do not put credentials in the repository or in
 `infra/compose/.env.x1c`.
 
+The CD environment file is intentionally root-owned and mode `0600`. systemd reads it before
+starting the unprivileged deployment service and passes only its variables to that service; the
+deployment script does not need direct filesystem read access to the file.
+
 ## Operations
 
 View recent deployment decisions:

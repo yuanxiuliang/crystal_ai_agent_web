@@ -2,7 +2,7 @@
 set -Eeuo pipefail
 
 CD_ENV_FILE="${AGENTWEB_CD_ENV_FILE:-/etc/agentweb-rag-cd.env}"
-if [[ -f "$CD_ENV_FILE" ]]; then
+if [[ -r "$CD_ENV_FILE" ]]; then
   # shellcheck disable=SC1090
   source "$CD_ENV_FILE"
 fi

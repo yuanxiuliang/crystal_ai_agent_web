@@ -140,8 +140,10 @@ run_candidate_tests() {
     -e MEMORY_SEMANTIC_SEARCH_ENABLED=false \
     -e PREDICTION_DEVICE=cpu \
     -e PREDICTION_TORCH_THREADS=2 \
+    -e PREDICTION_MODEL_DIR=/opt/agentweb/services/rag-api/models/growth-route-transformer/v2.0.0 \
+    -e PYTHONPATH=/opt/agentweb/services/rag-api \
     "$candidate_test_image" \
-    sh -eu -c 'ruff check src tests && pytest -q -p no:cacheprovider tests'
+    sh -eu -c 'ruff check --no-cache src tests && pytest -q -p no:cacheprovider tests'
 }
 
 if ! run_candidate_tests; then

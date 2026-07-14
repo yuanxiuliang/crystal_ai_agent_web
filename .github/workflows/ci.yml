@@ -42,6 +42,9 @@ jobs:
         run: ruff check src tests
       - name: Test backend
         working-directory: services/rag-api
+        env:
+          PYTHONPATH: .
+          PREDICTION_MODEL_DIR: ${{ github.workspace }}/services/rag-api/models/growth-route-transformer/v2.0.0
         run: pytest -q tests
 
   frontend:

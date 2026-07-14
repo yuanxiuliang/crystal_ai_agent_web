@@ -79,14 +79,17 @@ ci_status="$(printf '%s' "$workflow_json" | jq -r --arg sha "$remote_sha" '
     | select(.head_sha == $sha and .event == "push")
     | {id, status, conclusion}
   ] | sort_by(.id) | last // {status: "missing", conclusion: ""}
-  | "\(.status) \(.conclusion // \"\")"
+  | if .status == "completed" and .conclusion == "success" then "passed"
+    elif .status == "completed" then "failed"
+    else "pending"
+    end
 ')"
 
 case "$ci_status" in
-  "completed success")
+  passed)
     echo "[cd] GitHub CI passed for $remote_sha"
     ;;
-  "completed "*)
+  failed)
     echo "[cd] GitHub CI did not pass for $remote_sha: $ci_status"
     exit 0
     ;;

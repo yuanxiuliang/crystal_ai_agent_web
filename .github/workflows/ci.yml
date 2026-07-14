@@ -71,8 +71,13 @@ jobs:
       - name: Check shell syntax
         run: bash -n scripts/*.sh
       - name: Validate production Compose definition
-        run: >-
-          RAG_ENV_FILE=.env.x1c.example docker compose
-          --env-file infra/compose/.env.x1c.example
-          -f infra/compose/docker-compose.x1c.yml
-          config -q
+        run: |
+          # Some Compose releases resolve service env_file paths from the project root while
+          # others resolve them from the Compose file directory. Supply the ignored example in
+          # both locations so this validation is independent of the runner's Compose version.
+          cp infra/compose/.env.x1c.example .env.x1c
+          cp infra/compose/.env.x1c.example infra/compose/.env.x1c
+          docker compose \
+            --env-file infra/compose/.env.x1c.example \
+            -f infra/compose/docker-compose.x1c.yml \
+            config -q

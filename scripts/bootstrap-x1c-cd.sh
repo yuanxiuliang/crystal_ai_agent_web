@@ -31,7 +31,8 @@ if [[ ! -d "$DEPLOY_ROOT/.git" ]]; then
     exit 1
   fi
   echo "[bootstrap-cd] cloning $REPOSITORY_URL ($BRANCH)"
-  git clone --branch "$BRANCH" --single-branch "$REPOSITORY_URL" "$candidate_root"
+  git -c http.version=HTTP/1.1 clone --branch "$BRANCH" --single-branch \
+    "$REPOSITORY_URL" "$candidate_root"
   install -D -m 600 "$DEPLOY_ROOT/infra/compose/.env.x1c" \
     "$candidate_root/infra/compose/.env.x1c"
   mv "$DEPLOY_ROOT" "$backup_root"
@@ -41,6 +42,7 @@ fi
 
 cd "$DEPLOY_ROOT"
 git config pull.ff only
+git config http.version HTTP/1.1
 sudo ./scripts/install-x1c-systemd.sh
 sudo ./scripts/install-x1c-cd.sh
 sudo systemctl start agentweb-rag-cd.service

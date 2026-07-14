@@ -48,7 +48,7 @@ if [[ -n "$(git status --porcelain --untracked-files=no)" ]]; then
   exit 1
 fi
 
-remote_sha="$(git ls-remote --refs origin "refs/heads/$BRANCH" | awk 'NR == 1 { print $1 }')"
+remote_sha="$(git -c http.version=HTTP/1.1 ls-remote --refs origin "refs/heads/$BRANCH" | awk 'NR == 1 { print $1 }')"
 if [[ ! "$remote_sha" =~ ^[0-9a-f]{40}$ ]]; then
   echo "[cd] unable to resolve origin/$BRANCH" >&2
   exit 1
@@ -96,7 +96,7 @@ case "$ci_status" in
     ;;
 esac
 
-git fetch --prune origin "$BRANCH"
+git -c http.version=HTTP/1.1 fetch --prune origin "$BRANCH"
 git cat-file -e "$remote_sha^{commit}"
 
 release_root="$RELEASES_ROOT/$remote_sha"

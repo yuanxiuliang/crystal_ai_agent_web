@@ -70,14 +70,11 @@ jobs:
       - uses: actions/checkout@v4
       - name: Check shell syntax
         run: bash -n scripts/*.sh
-      - name: Validate production Compose definition
+      - name: Verify deployment assets
         run: |
-          # Some Compose releases resolve service env_file paths from the project root while
-          # others resolve them from the Compose file directory. Supply the ignored example in
-          # both locations so this validation is independent of the runner's Compose version.
-          cp infra/compose/.env.x1c.example .env.x1c
-          cp infra/compose/.env.x1c.example infra/compose/.env.x1c
-          docker compose \
-            --env-file infra/compose/.env.x1c.example \
-            -f infra/compose/docker-compose.x1c.yml \
-            config -q
+          test -f infra/compose/docker-compose.x1c.yml
+          test -f infra/compose/.env.x1c.example
+          test -f infra/docker/rag-api.Dockerfile
+          test -f infra/docker/rag-web.Dockerfile
+          test -x scripts/deploy-x1c-rag.sh
+          test -x scripts/x1c-auto-deploy.sh

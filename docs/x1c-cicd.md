@@ -12,8 +12,9 @@ developer commit and push to main
   -> production Compose deployment
 ```
 
-GitHub CI runs backend lint/tests, RAG Web type checking/building, shell syntax checks, and
-production Compose validation. The workflow file is `.github/workflows/ci.yml`; its exact
+GitHub CI runs backend lint/tests, RAG Web type checking/building, and deployment shell/asset
+checks. The production Compose definition is validated by the X1C candidate promotion path before
+any production container is changed. The workflow file is `.github/workflows/ci.yml`; its exact
 workflow identity is part of the X1C deployment contract.
 
 The X1C poller never deploys a commit that lacks a successful GitHub CI run. It then creates a

@@ -79,5 +79,6 @@ jobs:
           test -f infra/compose/.env.x1c.example
           test -f infra/docker/rag-api.Dockerfile
           test -f infra/docker/rag-web.Dockerfile
+          test -f rawData.jsonl
           test -x scripts/deploy-x1c-rag.sh
           test -x scripts/x1c-auto-deploy.sh

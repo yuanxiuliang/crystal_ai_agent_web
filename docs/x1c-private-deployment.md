@@ -44,10 +44,12 @@ Then build and launch the private stack:
 ./scripts/deploy-x1c-rag.sh
 ```
 
-The `rag-bootstrap` one-shot service initializes PostgreSQL and the LangGraph checkpointer, then
-inspects `growth_records_minilm`. It imports the 6,292 source records only when the collection
-is missing, empty, incomplete, or has a vector schema other than the fixed 384-dimensional
-MiniLM contract. A healthy unchanged collection is not embedded again.
+The `rag-bootstrap` one-shot service initializes PostgreSQL and the LangGraph checkpointer. When
+the derived text-only retrieval input is absent from a clean release checkout, it deterministically
+regenerates it from the versioned `rawData.jsonl` source before inspecting
+`growth_records_minilm`. It imports the 6,292 source records only when the collection is missing,
+empty, incomplete, or has a vector schema other than the fixed 384-dimensional MiniLM contract.
+A healthy unchanged collection is not embedded again.
 
 Check the stack at any time:
 

@@ -31,6 +31,10 @@ Passing the candidate test is required before the Git-managed production checkou
 the normal `scripts/deploy-x1c-rag.sh` deployment runs. Persistent production volumes are never
 part of candidate testing.
 
+The X1C checkout is release-only. It advances by checking out the exact tested commit in detached
+HEAD mode, which also works with the shallow first clone. The updater refuses any tracked local
+change before doing so; application configuration remains in ignored files outside Git history.
+
 ## First Bootstrap
 
 The first CI/CD-enabled commit must already be present on GitHub. On the X1C, run the committed

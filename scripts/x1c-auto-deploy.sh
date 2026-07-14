@@ -153,7 +153,10 @@ if ! run_candidate_tests; then
 fi
 
 echo "[cd] candidate passed; advancing production checkout to $remote_sha"
-git merge --ff-only "$remote_sha"
+# A shallow deployment clone may not contain the shared ancestor needed by `merge --ff-only`.
+# This checkout is release-only and was verified clean above, so point HEAD at the exact tested
+# commit rather than constructing a merge commit or mutating any developer branch history.
+git checkout --detach "$remote_sha"
 
 echo "[cd] rebuilding and deploying the tested production revision"
 RAG_DEPLOY_PULL_BASE_IMAGES=0 "$DEPLOY_ROOT/scripts/deploy-x1c-rag.sh"

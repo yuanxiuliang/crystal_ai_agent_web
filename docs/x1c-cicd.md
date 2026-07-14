@@ -44,7 +44,8 @@ chmod +x scripts/bootstrap-x1c-cd.sh
 
 The bootstrap script does the following atomically enough for this small single-host deployment:
 
-1. Clones `main` into a Git-managed replacement directory.
+1. Shallow-clones `main` into a Git-managed replacement directory. This keeps the first transfer
+   bounded while retaining normal Git fetch support for future updates.
 2. Copies the existing ignored `infra/compose/.env.x1c` deployment configuration with mode `0600`.
 3. Preserves the old copied source directory as a timestamped backup.
 4. Reinstalls the existing production start unit against the Git-managed path.

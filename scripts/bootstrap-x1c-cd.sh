@@ -6,6 +6,7 @@ set -Eeuo pipefail
 REPOSITORY_URL="${AGENTWEB_REPOSITORY_URL:-https://github.com/yuanxiuliang/crystal_ai_agent_web.git}"
 BRANCH="${AGENTWEB_BRANCH:-main}"
 DEPLOY_ROOT="${AGENTWEB_DEPLOY_ROOT:-$HOME/agentweb-rag}"
+CANDIDATE_ROOT="${AGENTWEB_CANDIDATE_ROOT:-${DEPLOY_ROOT}.git-candidate}"
 
 if [[ "$(id -u)" -eq 0 ]]; then
   echo "Run this bootstrap as the normal deployment user, not root." >&2
@@ -23,20 +24,24 @@ if [[ ! -f "$DEPLOY_ROOT/infra/compose/.env.x1c" ]]; then
 fi
 
 if [[ ! -d "$DEPLOY_ROOT/.git" ]]; then
-  candidate_root="${DEPLOY_ROOT}.git-candidate"
   backup_root="${DEPLOY_ROOT}.pre-git-$(date +%Y%m%dT%H%M%SZ)"
-  if [[ -e "$candidate_root" ]]; then
-    echo "A previous Git candidate directory still exists: $candidate_root" >&2
+  if [[ -d "$CANDIDATE_ROOT/.git" ]]; then
+    echo "[bootstrap-cd] reusing existing Git candidate: $CANDIDATE_ROOT"
+    git -C "$CANDIDATE_ROOT" -c http.version=HTTP/1.1 fetch --depth 1 origin "$BRANCH"
+    git -C "$CANDIDATE_ROOT" checkout -B "$BRANCH" FETCH_HEAD
+  elif [[ -e "$CANDIDATE_ROOT" ]]; then
+    echo "A previous Git candidate directory still exists: $CANDIDATE_ROOT" >&2
     echo "Inspect it before rerunning this bootstrap; it will not be deleted automatically." >&2
     exit 1
+  else
+    echo "[bootstrap-cd] shallow-cloning $REPOSITORY_URL ($BRANCH)"
+    git -c http.version=HTTP/1.1 clone --depth 1 --branch "$BRANCH" --single-branch \
+      "$REPOSITORY_URL" "$CANDIDATE_ROOT"
   fi
-  echo "[bootstrap-cd] cloning $REPOSITORY_URL ($BRANCH)"
-  git -c http.version=HTTP/1.1 clone --branch "$BRANCH" --single-branch \
-    "$REPOSITORY_URL" "$candidate_root"
   install -D -m 600 "$DEPLOY_ROOT/infra/compose/.env.x1c" \
-    "$candidate_root/infra/compose/.env.x1c"
+    "$CANDIDATE_ROOT/infra/compose/.env.x1c"
   mv "$DEPLOY_ROOT" "$backup_root"
-  mv "$candidate_root" "$DEPLOY_ROOT"
+  mv "$CANDIDATE_ROOT" "$DEPLOY_ROOT"
   echo "[bootstrap-cd] preserved prior copied source at $backup_root"
 fi
 

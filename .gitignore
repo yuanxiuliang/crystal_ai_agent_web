@@ -2,6 +2,7 @@
 .env
 .env.*
 !.env.example
+!infra/compose/.env.x1c.example
 
 node_modules/
 .next/

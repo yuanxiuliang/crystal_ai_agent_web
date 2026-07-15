@@ -219,6 +219,98 @@ class ConversationStore:
         finally:
             connection.close()
 
+    def replace_user_message_and_truncate(
+        self,
+        *,
+        user_id: str,
+        session_id: str,
+        message_id: str,
+        content: str,
+    ) -> list[dict[str, Any]] | None:
+        """Replace one user turn and discard the later display-history branch."""
+        clean_content = content.strip()
+        if not clean_content:
+            raise ValueError("Chat message content is required.")
+        self.ensure_schema()
+        now = _utc_now()
+        connection = self.database.connect()
+        try:
+            cursor = connection.cursor()
+            self.database.execute(
+                cursor,
+                """
+                SELECT content
+                FROM chat_messages
+                WHERE id = ? AND user_id = ? AND session_id = ? AND role = 'user'
+                """,
+                (message_id, user_id, session_id),
+            )
+            target = cursor.fetchone()
+            if target is None:
+                connection.rollback()
+                return None
+            original_content = str(target[0])
+            self.database.execute(
+                cursor,
+                """
+                SELECT id
+                FROM chat_messages
+                WHERE user_id = ? AND session_id = ?
+                ORDER BY created_at ASC, id ASC
+                """,
+                (user_id, session_id),
+            )
+            ordered_message_ids = [str(row[0]) for row in cursor.fetchall()]
+            try:
+                target_index = ordered_message_ids.index(message_id)
+            except ValueError:
+                connection.rollback()
+                return None
+            self.database.execute(
+                cursor,
+                """
+                UPDATE chat_messages
+                SET content = ?, response_json = NULL
+                WHERE id = ? AND user_id = ? AND session_id = ?
+                """,
+                (clean_content, message_id, user_id, session_id),
+            )
+            for later_message_id in ordered_message_ids[target_index + 1 :]:
+                self.database.execute(
+                    cursor,
+                    """
+                    DELETE FROM chat_messages
+                    WHERE id = ? AND user_id = ? AND session_id = ?
+                    """,
+                    (later_message_id, user_id, session_id),
+                )
+            self.database.execute(
+                cursor,
+                "SELECT title FROM chat_sessions WHERE id = ? AND user_id = ?",
+                (session_id, user_id),
+            )
+            session = cursor.fetchone()
+            if session is None:
+                connection.rollback()
+                return None
+            title = str(session[0])
+            next_title = _title_from_message(clean_content) if title == _title_from_message(original_content) else title
+            self.database.execute(
+                cursor,
+                """
+                UPDATE chat_sessions SET title = ?, updated_at = ?
+                WHERE id = ? AND user_id = ?
+                """,
+                (next_title, now, session_id, user_id),
+            )
+            connection.commit()
+        except Exception:
+            connection.rollback()
+            raise
+        finally:
+            connection.close()
+        return self.list_messages(user_id=user_id, session_id=session_id)
+
     def list_messages(
         self, *, user_id: str, session_id: str, limit: int = 200
     ) -> list[dict[str, Any]]:
@@ -232,7 +324,7 @@ class ConversationStore:
                 SELECT id, role, content, response_json, created_at
                 FROM chat_messages
                 WHERE user_id = ? AND session_id = ?
-                ORDER BY created_at ASC
+                ORDER BY created_at ASC, id ASC
                 LIMIT ?
                 """,
                 (user_id, session_id, max(1, min(500, limit))),

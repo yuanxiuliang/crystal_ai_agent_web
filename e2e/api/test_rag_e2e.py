@@ -34,7 +34,13 @@ def _new_session(client: httpx.Client) -> str:
     return str(response.json()["id"])
 
 
-def _stream_chat(client: httpx.Client, session_id: str, message: str) -> list[dict[str, Any]]:
+def _stream_chat(
+    client: httpx.Client,
+    session_id: str,
+    message: str,
+    *,
+    replace_message_id: str | None = None,
+) -> list[dict[str, Any]]:
     payload = {
         "session_id": session_id,
         "message": message,
@@ -45,6 +51,8 @@ def _stream_chat(client: httpx.Client, session_id: str, message: str) -> list[di
             "stream_trace": False,
         },
     }
+    if replace_message_id:
+        payload["replace_message_id"] = replace_message_id
     events: list[dict[str, Any]] = []
     with client.stream("POST", "/api/rag/chat/stream", json=payload) as response:
         response.raise_for_status()
@@ -150,6 +158,28 @@ def test_real_llm_rag_contracts() -> None:
         assert "TaAs" in follow_up_final["answer"]
         assert any(token in follow_up_final["answer"] for token in ("1050", "950"))
 
+        original_history = alice.get(f"/api/rag/sessions/{taas_session}/messages")
+        original_history.raise_for_status()
+        original_question_id = str(original_history.json()[0]["id"])
+        edited_events = _stream_chat(
+            alice,
+            taas_session,
+            "EuCr2As2 单晶怎么做？",
+            replace_message_id=original_question_id,
+        )
+        edited_final = _final(edited_events)
+        assert edited_final["evidence_kind"] == "literature_record"
+        assert {item["doi"] for item in edited_final["citations"]} == {
+            "10.5555/e2e.eucr2as2.001"
+        }
+        edited_history = alice.get(f"/api/rag/sessions/{taas_session}/messages")
+        edited_history.raise_for_status()
+        visible_history = edited_history.json()
+        assert [item["role"] for item in visible_history] == ["user", "assistant"]
+        assert visible_history[0]["content"] == "EuCr2As2 单晶怎么做？"
+        assert "TaAs 单晶怎么做" not in "\n".join(item["content"] for item in visible_history)
+        assert "它的生长温度" not in "\n".join(item["content"] for item in visible_history)
+
         prediction_session = _new_session(alice)
         prediction_events = _stream_chat(alice, prediction_session, "我要长 Mn3GaN 单晶")
         prediction_final = _final(prediction_events)
@@ -188,6 +218,15 @@ def test_real_llm_rag_contracts() -> None:
         bob_id = str(bob_login["user"]["id"])
         assert bob_id != alice_id
         assert bob.get(f"/api/rag/sessions/{taas_session}/messages").status_code == 404
+        blocked_edit = bob.post(
+            "/api/rag/chat/stream",
+            json={
+                "session_id": taas_session,
+                "message": "不应修改其他用户的问题。",
+                "replace_message_id": original_question_id,
+            },
+        )
+        assert blocked_edit.status_code == 404
 
         store = _memory_store()
         alice_memories = store.load_long_memories(

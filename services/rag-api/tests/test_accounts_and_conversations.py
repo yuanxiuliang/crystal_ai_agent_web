@@ -57,6 +57,41 @@ def test_conversation_history_and_metadata_are_scoped_to_the_owner(tmp_path) -> 
     assert messages[1]["response"]["evidence_kind"] == "model_prediction"
 
 
+def test_replacing_a_user_message_discards_its_later_display_history(tmp_path) -> None:
+    store = ConversationStore(f"sqlite:///{tmp_path / 'conversations.sqlite3'}")
+    session = store.create_session(user_id="alice")
+    first_question = store.append_message(
+        user_id="alice", session_id=session["id"], role="user", content="TaAs怎么做？"
+    )
+    store.append_message(
+        user_id="alice", session_id=session["id"], role="assistant", content="TaAs 的回答。"
+    )
+    store.append_message(
+        user_id="alice", session_id=session["id"], role="user", content="它的温度呢？"
+    )
+    store.append_message(
+        user_id="alice", session_id=session["id"], role="assistant", content="TaAs 温度回答。"
+    )
+
+    retained = store.replace_user_message_and_truncate(
+        user_id="alice",
+        session_id=session["id"],
+        message_id=first_question["id"],
+        content="EuCr2As2怎么做？",
+    )
+
+    assert retained is not None
+    assert [(item["role"], item["content"]) for item in retained] == [
+        ("user", "EuCr2As2怎么做？"),
+    ]
+    assert store.replace_user_message_and_truncate(
+        user_id="bob",
+        session_id=session["id"],
+        message_id=first_question["id"],
+        content="不应修改。",
+    ) is None
+
+
 def test_auth_and_session_api_use_cookie_identity(monkeypatch, tmp_path) -> None:
     account_store = AccountStore(f"sqlite:///{tmp_path / 'accounts.sqlite3'}")
     conversation_store = ConversationStore(f"sqlite:///{tmp_path / 'conversations.sqlite3'}")

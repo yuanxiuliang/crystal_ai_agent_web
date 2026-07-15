@@ -127,6 +127,48 @@ def test_short_memory_material_history_survives_message_compaction(tmp_path) -> 
     assert all(formula in follow_up["answer"] for formula in formulas)
 
 
+def test_reset_short_term_session_discards_snapshot_and_replaces_checkpoint_mapping(tmp_path) -> None:
+    store = _store(tmp_path)
+    user_id = "researcher-a"
+    session_id = "edited-session"
+    old_thread_id = "growth-rag-before-edit"
+
+    store.save_session(
+        user_id=user_id,
+        session_id=session_id,
+        messages=[{"role": "user", "content": "TaAs怎么做？"}],
+        conversation_summary="用户询问 TaAs。",
+        active_context={"formula": "TaAs"},
+        short_memory={"material_history": [{"formula": "TaAs"}]},
+    )
+    checkpoint = store.get_or_create_checkpoint_session(
+        user_id=user_id,
+        session_id=session_id,
+        initial_thread_id=old_thread_id,
+    )
+    assert checkpoint.graph_thread_id == old_thread_id
+    assert store.complete_checkpoint_turn(
+        user_id=user_id,
+        session_id=session_id,
+        graph_thread_id=old_thread_id,
+    )
+
+    assert store.reset_short_term_session(
+        user_id=user_id,
+        session_id=session_id,
+        replacement_thread_id="growth-rag-after-edit",
+    ) == old_thread_id
+    assert store.load_session(user_id, session_id) is None
+
+    replacement = store.get_or_create_checkpoint_session(
+        user_id=user_id,
+        session_id=session_id,
+        initial_thread_id="ignored-after-reset",
+    )
+    assert replacement.graph_thread_id == "growth-rag-after-edit"
+    assert replacement.turn_count == 0
+
+
 def test_long_memory_upserts_and_enforces_quota(tmp_path) -> None:
     store = _store(tmp_path)
     created = store.upsert_memory(

@@ -107,6 +107,10 @@ function plannedFormula(data: Record<string, unknown>): string | null {
   return typeof formula === "string" && formula.trim() ? formula.trim() : null;
 }
 
+function predictionIntroduction(content: string): string {
+  return content.split("\n").filter(Boolean).slice(0, 2).join("\n\n");
+}
+
 type AssistantMessageProps = {
   message: ChatMessage;
   onOpenEvidence: () => void;
@@ -117,59 +121,48 @@ type AssistantMessageProps = {
 
 function AssistantMessage({ message, onOpenEvidence, isPending, activity, activityTrail }: AssistantMessageProps) {
   const response = message.response;
-  if (response?.evidence_kind === "model_prediction" && response.prediction) {
-    const prediction = response.prediction;
-    const fallbackReasons = response.retrieval?.outcome?.reason_codes ?? [];
-    return (
-      <div className="assistant-content prediction-answer">
-        <div className="message-kicker model-kicker">可尝试方案 · 模型预测 · 未验证</div>
-        <p>当前没有找到足以支持该问题的真实文献或实验记录。</p>
-        <p>以下路线可作为实验探索起点，尚未由当前真实记录验证，不是文献事实。</p>
-        <div className="model-meta">
-          {prediction.model.model_id}@{prediction.model.model_version} · {prediction.formula_std}
-        </div>
-        <div className="route-table-wrap">
-          <table className="route-table">
-            <thead>
-              <tr>
-                <th>候选</th>
-                <th>方法</th>
-                <th>原料与添加剂</th>
-                <th>温度程序</th>
-                <th>时长</th>
-              </tr>
-            </thead>
-            <tbody>
-              {prediction.routes.map((route) => (
-                <tr key={route.rank}>
-                  <td>{route.rank}</td>
-                  <td>{route.method}</td>
-                  <td>
-                    <div>{names(route.raw_reactants)}</div>
-                    {route.additives.length > 0 ? <small>添加剂：{names(route.additives)}</small> : null}
-                  </td>
-                  <td>{routeTemperature(route)}</td>
-                  <td>{range(route.growth.dur, "h")}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        {prediction.warnings.length > 0 ? (
-          <ul className="prediction-warnings">
-            {prediction.warnings.map((warning) => <li key={warning}>{warning}</li>)}
-          </ul>
-        ) : null}
-        {fallbackReasons.length > 0 ? <div className="model-reason">检索回退原因：{fallbackReasons.join("、")}</div> : null}
-      </div>
-    );
-  }
-
+  const prediction = response?.evidence_kind === "model_prediction" ? response.prediction : null;
   const citations: Citation[] = response?.citations ?? [];
+  const fallbackReasons = response?.retrieval?.outcome?.reason_codes ?? [];
   return (
     <div className="assistant-content">
+      {prediction ? <div className="message-kicker model-kicker">可尝试方案 · 模型预测 · 未验证</div> : null}
       {response?.evidence_kind === "literature_record" ? <div className="message-kicker">真实记录回答</div> : null}
-      {message.content ? <MarkdownAnswer content={message.content} /> : null}
+      {prediction ? (
+        <div className="prediction-content">
+          <MarkdownAnswer content={predictionIntroduction(message.content)} />
+          <div className="model-meta">
+            {prediction.model.model_id}@{prediction.model.model_version} · {prediction.formula_std}
+          </div>
+          <div className="route-table-wrap">
+            <table className="route-table">
+              <thead>
+                <tr>
+                  <th>候选</th>
+                  <th>方法</th>
+                  <th>原料与添加剂</th>
+                  <th>温度程序</th>
+                  <th>时长</th>
+                </tr>
+              </thead>
+              <tbody>
+                {prediction.routes.map((route) => (
+                  <tr key={route.rank}>
+                    <td>{route.rank}</td>
+                    <td>{route.method}</td>
+                    <td>
+                      <div>{names(route.raw_reactants)}</div>
+                      {route.additives.length > 0 ? <small>添加剂：{names(route.additives)}</small> : null}
+                    </td>
+                    <td>{routeTemperature(route)}</td>
+                    <td>{range(route.growth.dur, "h")}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ) : message.content ? <MarkdownAnswer content={message.content} /> : null}
       {isPending && !message.content ? (
         <div className="response-progress" role="status">
           {activityTrail.slice(0, -1).map((step, index) => (
@@ -186,12 +179,80 @@ function AssistantMessage({ message, onOpenEvidence, isPending, activity, activi
           </div>
         </div>
       ) : null}
-      {citations.length > 0 ? (
+      {prediction ? (
+        <div className="answer-footer prediction-footer">
+          {prediction.warnings.length > 0 ? (
+            <ul className="prediction-warnings">
+              {prediction.warnings.map((warning) => <li key={warning}>{warning}</li>)}
+            </ul>
+          ) : null}
+          {fallbackReasons.length > 0 ? <div className="model-reason">检索回退原因：{fallbackReasons.join("、")}</div> : null}
+          <button className="citation-summary prediction-summary" onClick={onOpenEvidence} type="button">
+            <FlaskConical size={15} aria-hidden="true" />
+            <span>候选路线与限制</span>
+          </button>
+        </div>
+      ) : citations.length > 0 ? (
         <button className="citation-summary" onClick={onOpenEvidence} type="button">
           <BookOpen size={15} aria-hidden="true" />
           <span>{citations.length} 条文献证据</span>
         </button>
       ) : null}
+    </div>
+  );
+}
+
+type UserMessageProps = {
+  message: ChatMessage;
+  editing: boolean;
+  editingValue: string;
+  disabled: boolean;
+  onCancel: () => void;
+  onChange: (value: string) => void;
+  onEdit: () => void;
+  onSubmit: () => void;
+};
+
+function UserMessage({
+  message,
+  editing,
+  editingValue,
+  disabled,
+  onCancel,
+  onChange,
+  onEdit,
+  onSubmit,
+}: UserMessageProps) {
+  return (
+    <div className={`user-message-bubble ${editing ? "is-editing" : ""}`}>
+      {editing ? (
+        <form className="message-edit-form" onSubmit={(event) => { event.preventDefault(); onSubmit(); }}>
+          <textarea
+            aria-label="编辑问题"
+            autoFocus
+            disabled={disabled}
+            onChange={(event) => onChange(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" && !event.shiftKey) {
+                event.preventDefault();
+                onSubmit();
+              }
+            }}
+            value={editingValue}
+          />
+          <div className="message-edit-actions">
+            <button className="icon-control" disabled={disabled} onClick={onCancel} title="取消编辑" type="button"><X size={15} /></button>
+            <button className="icon-control edit-submit" disabled={disabled || !editingValue.trim()} title="更新并重新生成" type="submit"><SendHorizontal size={15} /></button>
+          </div>
+        </form>
+      ) : (
+        <>
+          <div className="message-text">{message.content}</div>
+          <div className="user-message-tools">
+            <button className="icon-control" disabled={disabled} onClick={onEdit} title="编辑问题" type="button"><Pencil size={14} /></button>
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -215,6 +276,8 @@ export function ChatShell() {
   const [evidenceOpen, setEvidenceOpen] = useState(false);
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const [editingValue, setEditingValue] = useState("");
 
   const evidenceResponse = useMemo<FinalResponse | null>(() => {
     for (let index = messages.length - 1; index >= 0; index -= 1) {
@@ -229,6 +292,13 @@ export function ChatShell() {
     const next = await listSessions();
     setSessions(next);
     return next;
+  }
+
+  async function refreshMessages(sessionId = requestedSessionId) {
+    if (!sessionId) return [];
+    const history = await listMessages(sessionId);
+    setMessages(history);
+    return history;
   }
 
   useEffect(() => {
@@ -322,30 +392,56 @@ export function ChatShell() {
     });
   }
 
-  async function submit() {
+  function beginMessageEdit(message: ChatMessage) {
+    if (isRunning) return;
+    setEditingMessageId(message.id);
+    setEditingValue(message.content);
+    setError(null);
+  }
+
+  function cancelMessageEdit() {
+    setEditingMessageId(null);
+    setEditingValue("");
+  }
+
+  async function submit(replaceMessageId?: string) {
     const content = input.trim();
-    if (!content || !requestedSessionId || isRunning) return;
+    const nextContent = replaceMessageId ? editingValue.trim() : content;
+    if (!nextContent || !requestedSessionId || isRunning) return;
 
     const assistantId = `assistant-${Date.now()}`;
     const controller = new AbortController();
     abortRef.current = controller;
-    setInput("");
+    if (replaceMessageId) cancelMessageEdit();
+    else setInput("");
     setIsRunning(true);
     setPendingAssistantId(assistantId);
     setActivity(INITIAL_ACTIVITY);
     setActivityTrail([INITIAL_ACTIVITY]);
     setError(null);
-    setMessages((current) => [
-      ...current,
-      { id: `user-${Date.now()}`, role: "user", content, created_at: localNow() },
-      { id: assistantId, role: "assistant", content: "", created_at: localNow() },
-    ]);
+    setMessages((current) => {
+      if (!replaceMessageId) {
+        return [
+          ...current,
+          { id: `user-${Date.now()}`, role: "user", content: nextContent, created_at: localNow() },
+          { id: assistantId, role: "assistant", content: "", created_at: localNow() },
+        ];
+      }
+      const targetIndex = current.findIndex((message) => message.id === replaceMessageId && message.role === "user");
+      if (targetIndex < 0) return current;
+      return [
+        ...current.slice(0, targetIndex),
+        { ...current[targetIndex], content: nextContent, response: null },
+        { id: assistantId, role: "assistant", content: "", created_at: localNow() },
+      ];
+    });
 
     try {
       await streamChat(
         {
           session_id: requestedSessionId,
-          message: content,
+          message: nextContent,
+          ...(replaceMessageId ? { replace_message_id: replaceMessageId } : {}),
           options: { force_retrieve: false, top_k: 12, retrieval_mode: "hybrid", stream_trace: false },
         },
         {
@@ -427,6 +523,7 @@ export function ChatShell() {
         },
         controller.signal,
       );
+      await refreshMessages(requestedSessionId);
     } catch (cause) {
       const streamError = cause instanceof Error ? cause : new Error(String(cause));
       const message = streamError.name === "AbortError" ? "已停止生成。" : `请求失败：${streamError.message}`;
@@ -535,7 +632,18 @@ export function ChatShell() {
                   message={message}
                   onOpenEvidence={() => setEvidenceOpen(true)}
                 />
-              ) : <div className="message-text">{message.content}</div>}
+              ) : (
+                <UserMessage
+                  disabled={isRunning}
+                  editing={editingMessageId === message.id}
+                  editingValue={editingMessageId === message.id ? editingValue : ""}
+                  message={message}
+                  onCancel={cancelMessageEdit}
+                  onChange={setEditingValue}
+                  onEdit={() => beginMessageEdit(message)}
+                  onSubmit={() => void submit(message.id)}
+                />
+              )}
             </article>
           ))}
         </section>

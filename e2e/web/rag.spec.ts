@@ -32,6 +32,17 @@ test("a user can register, view real evidence, and view an explicitly unverified
   await expect(literatureAnswer.getByText(/条文献证据/)).toBeVisible();
   await literatureAnswer.getByText(/条文献证据/).click();
   await expect(page.getByLabel("证据来源")).toContainText("10.5555/e2e.taas.001");
+  await page.getByTitle("关闭证据面板").click();
+
+  const initialQuestion = page.locator(".chat-message.user").first();
+  await initialQuestion.getByTitle("编辑问题").click();
+  await initialQuestion.getByRole("textbox", { name: "编辑问题" }).fill("EuCr2As2 单晶怎么做？");
+  await initialQuestion.getByTitle("更新并重新生成").click();
+  const editedAnswer = page.locator(".chat-message.assistant").last();
+  await expect(editedAnswer.getByText("真实记录回答")).toBeVisible({ timeout: 120_000 });
+  await expect(initialQuestion).toContainText("EuCr2As2 单晶怎么做？");
+  await expect(page.locator(".chat-message.user")).toHaveCount(1);
+  await expect(editedAnswer).toContainText("EuCr2As2");
 
   await page.getByRole("button", { name: "新建对话" }).click();
   await expect(page.getByRole("textbox", { name: "研究问题" })).toBeVisible();
@@ -41,8 +52,11 @@ test("a user can register, view real evidence, and view an explicitly unverified
     timeout: 120_000,
   });
   await expect(predictionAnswer).toContainText("Mn3GaN");
+  await expect(predictionAnswer.locator(".assistant-content")).toBeVisible();
+  await expect(predictionAnswer.locator(".prediction-content")).toBeVisible();
   await expect(predictionAnswer.locator("table.route-table")).toBeVisible();
   await expect(predictionAnswer).toContainText("不是文献事实");
+  await expect(predictionAnswer.getByText("候选路线与限制")).toBeVisible();
 });
 
 test("an existing email rejects a wrong password before allowing the correct password", async ({ page }) => {

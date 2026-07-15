@@ -11,6 +11,7 @@ export async function streamChat(
   body: {
     session_id: string;
     message: string;
+    replace_message_id?: string;
     options: {
       force_retrieve: boolean;
       top_k: number;

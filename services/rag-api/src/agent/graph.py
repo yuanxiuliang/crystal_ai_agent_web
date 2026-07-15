@@ -203,6 +203,21 @@ class GrowthRAGGraph:
     async def _update_memory_node(self, state: GrowthRAGState) -> dict[str, Any]:
         return await update_memory(state, self.memory_store)
 
+    async def reset_session_context(self, *, user_id: str, session_id: str) -> None:
+        """Discard the old short-term branch before a user edits an earlier question."""
+        replacement_thread_id = self._replacement_thread_id()
+        old_thread_id = await asyncio.to_thread(
+            self.memory_store.reset_short_term_session,
+            user_id=user_id,
+            session_id=session_id,
+            replacement_thread_id=replacement_thread_id,
+        )
+        if old_thread_id is None:
+            return
+        checkpointer = await self.checkpointer_runtime.get()
+        if checkpointer is not None and old_thread_id != replacement_thread_id:
+            await checkpointer.adelete_thread(old_thread_id)
+
     def _get_retrieval_service(self) -> RetrievalService:
         if self.retrieval is None:
             self.retrieval = get_default_retrieval_service()

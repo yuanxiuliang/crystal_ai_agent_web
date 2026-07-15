@@ -370,6 +370,56 @@ class MemoryStore:
         finally:
             connection.close()
 
+    def reset_short_term_session(
+        self,
+        *,
+        user_id: str,
+        session_id: str,
+        replacement_thread_id: str,
+    ) -> str | None:
+        """Atomically move an edited session to a fresh short-term checkpoint thread."""
+        self.ensure_schema()
+        now = _utc_now()
+        expires_at = _utc_after(days=self.limits.session_ttl_days)
+        connection = self._connect()
+        try:
+            cursor = connection.cursor()
+            self._execute(
+                cursor,
+                """
+                SELECT graph_thread_id FROM checkpoint_sessions
+                WHERE user_id = ? AND session_id = ?
+                """,
+                (user_id, session_id),
+            )
+            row = cursor.fetchone()
+            self._execute(
+                cursor,
+                """
+                INSERT INTO checkpoint_sessions (
+                    user_id, session_id, graph_thread_id, turn_count, updated_at, expires_at
+                ) VALUES (?, ?, ?, 0, ?, ?)
+                ON CONFLICT(user_id, session_id) DO UPDATE SET
+                    graph_thread_id = excluded.graph_thread_id,
+                    turn_count = 0,
+                    updated_at = excluded.updated_at,
+                    expires_at = excluded.expires_at
+                """,
+                (user_id, session_id, replacement_thread_id, now, expires_at),
+            )
+            self._execute(
+                cursor,
+                "DELETE FROM session_memory WHERE user_id = ? AND session_id = ?",
+                (user_id, session_id),
+            )
+            connection.commit()
+            return str(row[0]) if row else None
+        except Exception:
+            connection.rollback()
+            raise
+        finally:
+            connection.close()
+
     def replace_checkpoint_session_thread(
         self,
         *,

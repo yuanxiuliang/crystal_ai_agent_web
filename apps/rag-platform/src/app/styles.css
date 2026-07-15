@@ -438,13 +438,76 @@ a:focus-visible {
 }
 
 .chat-message.user {
+  align-items: flex-end;
+  display: flex;
+  flex-direction: column;
+  margin-left: auto;
+  max-width: min(650px, 84%);
+}
+
+.user-message-bubble {
   background: var(--surface-muted);
   border: 0;
   border-radius: 12px;
   color: var(--text);
-  margin-left: auto;
-  max-width: min(650px, 84%);
+  max-width: 100%;
   padding: 10px 14px;
+}
+
+.user-message-bubble.is-editing {
+  min-width: min(460px, 100%);
+  padding: 8px 10px 8px 13px;
+  width: 100%;
+}
+
+.user-message-tools {
+  display: flex;
+  margin-top: 3px;
+  opacity: 0;
+  transition: opacity 140ms ease;
+}
+
+.chat-message.user:hover .user-message-tools,
+.user-message-bubble:focus-within .user-message-tools {
+  opacity: 1;
+}
+
+.user-message-tools .icon-control {
+  height: 28px;
+  width: 28px;
+}
+
+.message-edit-form {
+  align-items: end;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.message-edit-form textarea {
+  background: transparent;
+  border: 0;
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 42px;
+  outline: none;
+  padding: 3px 0;
+  resize: vertical;
+  width: 100%;
+}
+
+.message-edit-actions {
+  display: grid;
+  gap: 3px;
+}
+
+.message-edit-actions .icon-control {
+  height: 29px;
+  width: 29px;
+}
+
+.edit-submit {
+  color: var(--accent-strong);
 }
 
 .assistant-content {
@@ -665,25 +728,23 @@ a:focus-visible {
   color: var(--model);
 }
 
-.prediction-answer {
-  background: var(--model-bg);
-  border-left: 3px solid #b9aec1;
-  border-radius: 0 8px 8px 0;
-  padding: 15px 17px;
-}
-
-.prediction-answer p {
-  margin: 0 0 9px;
+.prediction-content {
+  max-width: 100%;
 }
 
 .model-meta,
 .model-reason {
   color: var(--muted-strong);
   font-size: 13px;
-  margin: 12px 0;
+  line-height: 1.55;
+  margin: 14px 0;
 }
 
 .route-table-wrap {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  margin: 16px 0;
+  max-width: 100%;
   overflow-x: auto;
 }
 
@@ -696,15 +757,17 @@ a:focus-visible {
 
 .route-table th,
 .route-table td {
-  border-bottom: 1px solid #e7e1e9;
-  padding: 9px 8px;
+  border-bottom: 1px solid var(--line);
+  padding: 10px 11px;
   text-align: left;
   vertical-align: top;
 }
 
 .route-table th {
+  background: #f7f8fa;
   color: var(--muted-strong);
   font-weight: 650;
+  white-space: nowrap;
 }
 
 .route-table small {
@@ -717,8 +780,17 @@ a:focus-visible {
   color: var(--muted-strong);
   font-size: 12px;
   line-height: 1.55;
-  margin: 14px 0 0;
+  margin: 0;
   padding-left: 18px;
+}
+
+.answer-footer {
+  margin-top: 13px;
+}
+
+.prediction-footer {
+  display: grid;
+  gap: 11px;
 }
 
 .citation-summary {
@@ -733,6 +805,14 @@ a:focus-visible {
 
 .citation-summary:hover {
   color: var(--accent);
+}
+
+.prediction-summary {
+  color: var(--model);
+}
+
+.prediction-summary:hover {
+  color: #5f496d;
 }
 
 .empty-state {
@@ -1000,6 +1080,14 @@ a:focus-visible {
 
   .chat-message.user {
     max-width: 92%;
+  }
+
+  .user-message-tools {
+    opacity: 1;
+  }
+
+  .user-message-bubble.is-editing {
+    min-width: 0;
   }
 
   .session-actions {

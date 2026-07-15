@@ -24,6 +24,8 @@ The test contract covers:
 6. user-scoped conversation access and PostgreSQL long-memory isolation;
 7. browser rendering of the real-evidence and prediction answer variants;
 8. a second bootstrap run, which must reuse the complete test collection rather than re-embed it.
+9. editing an earlier user question, which must remove the later conversation branch, reset the
+   LangGraph short-term checkpoint, and regenerate from the retained earlier context only.
 
 The test uses synthetic `10.5555/e2e.*` DOI values and a unique `growth_records_e2e` collection.
 It is intentionally separate from the 6,292-record production corpus.

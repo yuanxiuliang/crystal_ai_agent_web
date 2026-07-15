@@ -20,5 +20,6 @@ class ChatOptions(BaseModel):
 class ChatStreamRequest(BaseModel):
     session_id: str = Field(min_length=1, max_length=64)
     message_id: str | None = None
+    replace_message_id: str | None = Field(default=None, min_length=1, max_length=64)
     message: str
     options: ChatOptions = Field(default_factory=ChatOptions)

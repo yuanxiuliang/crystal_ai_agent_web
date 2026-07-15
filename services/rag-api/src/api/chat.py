@@ -16,6 +16,19 @@ from ..streaming.sse import encode_sse
 router = APIRouter()
 
 
+def _graph_history(messages: list[dict]) -> list[dict]:
+    return [
+        {
+            "role": message["role"],
+            "content": message["content"],
+            "message_id": message["id"],
+            "created_at": message["created_at"],
+            "metadata": {},
+        }
+        for message in messages
+    ]
+
+
 @router.post("/chat/stream")
 async def chat_stream(
     request: ChatStreamRequest,
@@ -27,19 +40,42 @@ async def chat_stream(
     )
     if session is None:
         raise HTTPException(status_code=404, detail="会话不存在。")
-    await asyncio.to_thread(
-        store.append_message,
-        user_id=account.id,
-        session_id=request.session_id,
-        role="user",
-        content=request.message,
-    )
-
     graph = GrowthRAGGraph()
+    if request.replace_message_id:
+        retained_messages = await asyncio.to_thread(
+            store.replace_user_message_and_truncate,
+            user_id=account.id,
+            session_id=request.session_id,
+            message_id=request.replace_message_id,
+            content=request.message,
+        )
+        if retained_messages is None:
+            raise HTTPException(status_code=404, detail="可编辑的用户消息不存在。")
+        await graph.reset_session_context(user_id=account.id, session_id=request.session_id)
+        history = retained_messages[:-1]
+    else:
+        history = await asyncio.to_thread(
+            store.list_messages,
+            user_id=account.id,
+            session_id=request.session_id,
+        )
+        await asyncio.to_thread(
+            store.append_message,
+            user_id=account.id,
+            session_id=request.session_id,
+            role="user",
+            content=request.message,
+        )
 
     async def persisted_events():
         final: dict | None = None
-        async for event in graph.stream({**request.model_dump(), "user_id": account.id}):
+        async for event in graph.stream(
+            {
+                **request.model_dump(exclude={"replace_message_id"}),
+                "messages": _graph_history(history),
+                "user_id": account.id,
+            }
+        ):
             if event.event == "final":
                 final = event.data
             yield event

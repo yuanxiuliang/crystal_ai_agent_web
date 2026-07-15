@@ -323,6 +323,20 @@ prediction fallback shows the failed-sufficiency reason, model ID/version, suppo
 warnings, and prediction-run reference. The Evidence workspace never turns an empty search
 into a model prediction.
 
+Literature and prediction answers must share one Chat answer layout: source-status heading,
+research-answer typography, footer, and side-panel entry. Prediction keeps its structured
+candidate-route table in the answer body and replaces the literature-citation footer with model
+provenance, warnings, and the retrieval-fallback reason. It must not use a separate card-like
+answer surface that makes an unverified route appear more authoritative than a record-backed
+answer.
+
+Users may edit any of their earlier Chat questions. Editing replaces that user message, removes
+the later visible conversation branch, resets the session's short-term LangGraph checkpoint, and
+re-executes from the retained earlier messages. The API must never append a duplicate user message
+for this operation. Explicit long-term memories are user-confirmed cross-session facts and are not
+silently deleted when a Chat branch is edited. Every edit path must preserve authenticated user
+ownership and must be covered by API and browser end-to-end tests.
+
 ## 10. Deployment and Resource Rules
 
 The public 1 GiB server is limited to HTTPS termination, static frontend delivery, reverse

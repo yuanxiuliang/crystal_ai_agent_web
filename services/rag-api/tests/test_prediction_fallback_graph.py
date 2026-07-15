@@ -192,6 +192,26 @@ def test_sufficient_retrieval_never_invokes_prediction(tmp_path) -> None:
     assert prediction.calls == []
     assert final["evidence_kind"] == "literature_record"
     assert final["citations"]
+    assert final["evidence_records"] == [
+        {
+            "record_id": "record-mn3gan-1",
+            "score": 0.9,
+            "title": None,
+            "material_formula": "Mn3GaN",
+            "growth_method": "flux growth",
+            "temperature_program": "750 C to 500 C",
+            "atmosphere": "argon",
+            "precursors": ["Mn", "Ga", "N2"],
+            "key_facts": [
+                "growth method: flux growth",
+                "temperature program: 750 C to 500 C",
+                "atmosphere: argon",
+                "precursors: Mn, Ga, N2",
+            ],
+            "source_text": "Mn3GaN was grown by flux growth from 750 C to 500 C under argon.",
+            "doi": "10.1000/example",
+        }
+    ]
     assert final["prediction"] is None
     assert "真实记录综合结论" in final["answer"]
     assert "记录支持的条件范围" in final["answer"]
@@ -260,6 +280,31 @@ def test_empty_i_want_to_grow_request_uses_prediction_fallback(tmp_path) -> None
     assert prediction.calls[0].formula == "Mn3GaN"
     assert final["evidence_kind"] == "model_prediction"
     assert any(name == "prediction_started" for name, _ in events)
+
+
+def test_make_formula_request_retrieves_before_prediction_fallback(tmp_path) -> None:
+    retrieval = StaticRetrieval([])
+    prediction = RecordingPredictionService()
+    graph = GrowthRAGGraph(
+        llm=MockLLMClient(),
+        retrieval=retrieval,
+        prediction=prediction,  # type: ignore[arg-type]
+        memory_store=_store(tmp_path),
+    )
+
+    final, events = asyncio.run(_run(graph, "我要做Mn3ZnN"))
+
+    assert retrieval.calls == 1
+    assert final["route"]["intent"] == "retrieve"
+    assert final["retrieval"]["filters"]["material_formula"] == "Mn3ZnN"
+    assert prediction.calls[0].formula == "Mn3ZnN"
+    assert final["evidence_kind"] == "model_prediction"
+    assert any(
+        name == "node_started" and data["node"] == "plan_retrieval" for name, data in events
+    )
+    assert any(
+        name == "node_started" and data["node"] == "retrieve_records" for name, data in events
+    )
 
 
 def test_follow_up_speculation_uses_active_formula_after_retrieval(tmp_path) -> None:

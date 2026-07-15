@@ -732,6 +732,17 @@ a:focus-visible {
   max-width: 100%;
 }
 
+.literature-content {
+  max-width: 100%;
+}
+
+.record-list-heading {
+  color: var(--muted-strong);
+  font-size: 13px;
+  font-weight: 650;
+  margin: 18px 0 -4px;
+}
+
 .model-meta,
 .model-reason {
   color: var(--muted-strong);

@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 from ...llm.client import LLMClient
-from ..prediction_policy import is_candidate_growth_request
+from ..prediction_policy import is_candidate_growth_request, is_material_growth_request
 from ..short_term_policy import (
     can_inherit_active_formula,
+    extract_formula_candidates,
     has_unresolved_material_target_attempt,
     is_material_history_request,
 )
@@ -21,6 +22,21 @@ async def analyze_and_route(state: GrowthRAGState, llm: LLMClient) -> dict:
         state["active_context"],
     )
     active_context = dict(state["active_context"])
+    # A formula that is present in the user message is a deterministic input fact.
+    # Keep it when an upstream LLM misses or normalizes it incorrectly, so the
+    # retrieval-first policy cannot be bypassed by one routing classification.
+    message_formulas = extract_formula_candidates(state["user_message"])
+    if message_formulas:
+        formulas = list(dict.fromkeys([*understanding["formulas"], *message_formulas]))
+        materials = list(dict.fromkeys([*understanding["materials"], *message_formulas]))
+        understanding = {
+            **understanding,
+            "materials": materials,
+            "formulas": formulas,
+            "missing_slots": [
+                slot for slot in understanding["missing_slots"] if slot != "target_material"
+            ],
+        }
     if is_material_history_request(state["user_message"], state["short_memory"]):
         return {
             "understanding": {**understanding, "task_type": "summarize", "missing_slots": []},
@@ -85,15 +101,14 @@ async def analyze_and_route(state: GrowthRAGState, llm: LLMClient) -> dict:
         if can_inherit_active_formula(state["user_message"], understanding["formulas"])
         else []
     )
-    if (
-        not route["should_retrieve"]
-        and len(candidate_formulas) == 1
-        and is_candidate_growth_request(state["user_message"], understanding["normalized_question"])
+    if len(candidate_formulas) == 1 and (
+        is_material_growth_request(state["user_message"], understanding["normalized_question"])
+        or is_candidate_growth_request(state["user_message"], understanding["normalized_question"])
     ):
         route = {
             "intent": "retrieve",
             "should_retrieve": True,
-            "reason": "用户请求候选生长路线；先检索真实记录，证据不足时允许模型回退。",
+            "reason": "检测到明确材料或候选生长请求；先检索真实记录。",
             "answer_mode": "evidence_grounded",
             "required_slots": ["target_material"],
             "missing_slots": [],

@@ -22,6 +22,11 @@ async def finalize_response(state: GrowthRAGState) -> dict:
         "session_id": state["session_id"],
         "answer": state["final_answer"] or "",
         "citations": state["citations"],
+        "evidence_records": (
+            state["evidence_pack"]["records"]
+            if state["selected_evidence_kind"] == "literature_record" and state["evidence_pack"]
+            else []
+        ),
         "route": state["route"],
         "retrieval": retrieval,
         "evidence_kind": state["selected_evidence_kind"],

@@ -34,6 +34,10 @@ _CANDIDATE_GROWTH_TERMS = (
     "我要长",
     "我想长",
     "想长",
+    "我要做",
+    "我想做",
+    "想做",
+    "做单晶",
     "长单晶",
     "推测",
     "预测",
@@ -50,6 +54,10 @@ _GROWTH_TARGET_TERMS = (
     "我要长",
     "我想长",
     "想长",
+    "我要做",
+    "我想做",
+    "想做",
+    "做单晶",
 )
 
 
@@ -59,6 +67,17 @@ def is_candidate_growth_request(*texts: str | None) -> bool:
     if any(term in combined for term in _FACTUAL_EVIDENCE_TERMS):
         return False
     return any(term in combined for term in _CANDIDATE_GROWTH_TERMS)
+
+
+def is_material_growth_request(*texts: str | None) -> bool:
+    """Whether an identified material is being requested for growth work.
+
+    This is intentionally separate from candidate-fallback eligibility. A factual
+    question still has to retrieve records, even though it must not use a model
+    prediction when those records are insufficient.
+    """
+    combined = "\n".join(value for value in texts if value).lower()
+    return any(term in combined for term in _GROWTH_TARGET_TERMS)
 
 
 def needs_explicit_material_formula(*texts: str | None) -> bool:

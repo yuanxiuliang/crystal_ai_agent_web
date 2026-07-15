@@ -6,7 +6,11 @@ from typing import Any
 from .state import Message, SessionMaterial, ShortMemory
 
 
-_FORMULA_RE = re.compile(r"(?<![A-Za-z])(?:[A-Z][a-z]?\d*){2,}(?![A-Za-z])")
+# Require at least one lowercase element suffix so uppercase workflow abbreviations
+# such as CVT are not mistaken for a multi-element chemical formula.
+_FORMULA_RE = re.compile(
+    r"(?<![A-Za-z])(?=[A-Za-z0-9]*[a-z])(?:[A-Z][a-z]?\d*){2,}(?![A-Za-z])"
+)
 _TARGET_ACTION_RE = re.compile(
     r"(?:我要|我想|想|帮我|请|如何|怎么)?(?:生长|制备|合成|长)(?P<target>[^，。！？；,.;!?]{0,64})"
 )

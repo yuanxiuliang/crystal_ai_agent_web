@@ -140,6 +140,9 @@ class EvidenceRecord(TypedDict):
     title: str | None
     material_formula: str | None
     growth_method: str | None
+    temperature_program: str | None
+    atmosphere: str | None
+    precursors: list[str]
     key_facts: list[str]
     source_text: str
     doi: str | None
@@ -222,6 +225,7 @@ class FinalResponse(TypedDict):
     session_id: str
     answer: str
     citations: list[Citation]
+    evidence_records: list[EvidenceRecord]
     route: RouteDecision | None
     retrieval: dict[str, Any] | None
     evidence_kind: SelectedEvidenceKind | None

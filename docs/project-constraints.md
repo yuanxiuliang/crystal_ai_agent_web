@@ -135,7 +135,7 @@ Milvus hit, a high vector score, or a non-empty result list alone is not suffici
 `empty` and `insufficient` may allow model fallback only when the user's task is to obtain a
 candidate growth route and an unambiguous, parseable formula is available from the request or
 the active conversation context. Candidate-route requests include direct operational wording
-such as "Mn3GaN怎么做", "我要长 Mn3GaN 单晶", "如何制备 Mn3GaN", and a follow-up such
+such as "Mn3GaN怎么做", "我要长 Mn3GaN 单晶", "我要做 Mn3ZnN", "如何制备 Mn3GaN", and a follow-up such
 as "那你推测一个" after one active formula is established. No further confirmation is required:
 after a completed insufficient retrieval, LangGraph autonomously invokes the local model. The
 model supports only formula-conditioned Flux/CVT route generation; it cannot replace missing
@@ -149,6 +149,9 @@ no-evidence response, not an invented model input.
 The initial sufficiency gate must be deterministic and inspect record identity, normalized
 formula/material match, normalized growth-method match, requested field coverage, and source
 integrity. An LLM may explain a completed decision but must not override these minimum gates.
+A parseable formula together with an explicit experimental action such as "我要做", "我想做",
+"我要长", "制备", "合成", or "单晶" must enter this retrieval-first path even if the
+upstream LLM initially labels the request as a direct answer.
 
 ### 4.2 Explicit Prediction
 

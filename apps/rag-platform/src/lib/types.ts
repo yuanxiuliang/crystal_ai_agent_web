@@ -33,6 +33,20 @@ export type Citation = {
   fields_used: string[];
 };
 
+export type LiteratureEvidenceRecord = {
+  record_id: string;
+  score: number;
+  title: string | null;
+  material_formula: string | null;
+  growth_method: string | null;
+  temperature_program: string | null;
+  atmosphere: string | null;
+  precursors: string[];
+  key_facts: string[];
+  source_text: string;
+  doi: string | null;
+};
+
 export type RouteDecision = {
   intent: string;
   should_retrieve: boolean;
@@ -77,6 +91,7 @@ export type FinalResponse = {
   session_id: string;
   answer: string;
   citations: Citation[];
+  evidence_records: LiteratureEvidenceRecord[];
   route: RouteDecision | null;
   retrieval: RetrievalTrace | null;
   evidence_kind: "literature_record" | "model_prediction" | null;

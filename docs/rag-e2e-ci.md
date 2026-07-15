@@ -18,11 +18,12 @@ The test contract covers:
 1. first-login registration, invalid-password rejection, and authenticated sessions;
 2. real MiniLM (384 dimensions) plus Milvus retrieval of an exact TaAs record;
 3. same-session TaAs follow-up resolution through the PostgreSQL LangGraph checkpointer;
-4. Mn3GaN retrieval insufficiency, rejection of Mn3Ge as direct evidence, and real predictor
-   fallback with an explicit unverified label;
+4. Mn3ZnN retrieval insufficiency for the direct wording `我要做 Mn3ZnN`, rejection of Mn3Ge
+   as direct evidence, and real predictor fallback with an explicit unverified label;
 5. evidence-only Mn3GaN requests, which must not invoke prediction or fabricate a DOI;
 6. user-scoped conversation access and PostgreSQL long-memory isolation;
-7. browser rendering of the real-evidence and prediction answer variants;
+7. browser rendering of real-evidence records in the same structured table surface used by
+   prediction routes, plus the explicitly unverified prediction variant;
 8. a second bootstrap run, which must reuse the complete test collection rather than re-embed it.
 9. editing an earlier user question, which must remove the later conversation branch, reset the
    LangGraph short-term checkpoint, and regenerate from the retained earlier context only.

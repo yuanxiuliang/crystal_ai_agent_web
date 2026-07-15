@@ -33,6 +33,7 @@ import type {
   Citation,
   CurrentUser,
   FinalResponse,
+  LiteratureEvidenceRecord,
   PredictionRoute,
 } from "../../lib/types";
 import { MarkdownAnswer } from "./markdown-answer";
@@ -111,6 +112,14 @@ function predictionIntroduction(content: string): string {
   return content.split("\n").filter(Boolean).slice(0, 2).join("\n\n");
 }
 
+function literatureInputs(record: LiteratureEvidenceRecord): string {
+  return record.precursors.length > 0 ? record.precursors.join("、") : "未提供";
+}
+
+function literatureSource(record: LiteratureEvidenceRecord): string {
+  return record.doi ? `DOI: ${record.doi}` : record.record_id;
+}
+
 type AssistantMessageProps = {
   message: ChatMessage;
   onOpenEvidence: () => void;
@@ -123,6 +132,9 @@ function AssistantMessage({ message, onOpenEvidence, isPending, activity, activi
   const response = message.response;
   const prediction = response?.evidence_kind === "model_prediction" ? response.prediction : null;
   const citations: Citation[] = response?.citations ?? [];
+  const evidenceRecords = response?.evidence_kind === "literature_record"
+    ? response.evidence_records ?? []
+    : [];
   const fallbackReasons = response?.retrieval?.outcome?.reason_codes ?? [];
   return (
     <div className="assistant-content">
@@ -135,7 +147,7 @@ function AssistantMessage({ message, onOpenEvidence, isPending, activity, activi
             {prediction.model.model_id}@{prediction.model.model_version} · {prediction.formula_std}
           </div>
           <div className="route-table-wrap">
-            <table className="route-table">
+            <table className="route-table" data-testid="prediction-route-table">
               <thead>
                 <tr>
                   <th>候选</th>
@@ -156,6 +168,38 @@ function AssistantMessage({ message, onOpenEvidence, isPending, activity, activi
                     </td>
                     <td>{routeTemperature(route)}</td>
                     <td>{range(route.growth.dur, "h")}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ) : evidenceRecords.length > 0 ? (
+        <div className="literature-content">
+          <MarkdownAnswer content={message.content} />
+          <div className="record-list-heading">已报道记录</div>
+          <div className="route-table-wrap">
+            <table className="route-table" data-testid="literature-record-table">
+              <thead>
+                <tr>
+                  <th>记录</th>
+                  <th>方法</th>
+                  <th>原料与气氛</th>
+                  <th>温度程序</th>
+                  <th>来源</th>
+                </tr>
+              </thead>
+              <tbody>
+                {evidenceRecords.map((record, index) => (
+                  <tr key={record.record_id}>
+                    <td>{index + 1}</td>
+                    <td>{record.growth_method ?? "未提供"}</td>
+                    <td>
+                      <div>{literatureInputs(record)}</div>
+                      {record.atmosphere ? <small>气氛：{record.atmosphere}</small> : null}
+                    </td>
+                    <td>{record.temperature_program ?? "未提供"}</td>
+                    <td>{literatureSource(record)}</td>
                   </tr>
                 ))}
               </tbody>

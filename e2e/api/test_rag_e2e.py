@@ -143,6 +143,14 @@ def test_real_llm_rag_contracts() -> None:
         assert "answer_with_evidence" in literature_nodes
         assert literature_final["citations"]
         assert {item["doi"] for item in literature_final["citations"]} == {"10.5555/e2e.taas.001"}
+        assert len(literature_final["evidence_records"]) == 1
+        literature_record = literature_final["evidence_records"][0]
+        assert literature_record["record_id"] == "e2e::taas::001"
+        assert literature_record["material_formula"] == "TaAs"
+        assert literature_record["growth_method"] == "chemical vapor transport"
+        assert literature_record["temperature_program"]
+        assert "1050 C" in literature_record["temperature_program"]
+        assert literature_record["doi"] == "10.5555/e2e.taas.001"
         assert "TaAs" in literature_final["answer"]
         assert any(
             token in literature_final["answer"]
@@ -181,7 +189,7 @@ def test_real_llm_rag_contracts() -> None:
         assert "它的生长温度" not in "\n".join(item["content"] for item in visible_history)
 
         prediction_session = _new_session(alice)
-        prediction_events = _stream_chat(alice, prediction_session, "我要长 Mn3GaN 单晶")
+        prediction_events = _stream_chat(alice, prediction_session, "我要做 Mn3ZnN")
         prediction_final = _final(prediction_events)
         prediction_nodes = _node_names(prediction_events)
         prediction_outcome = _event_data(prediction_events, "retrieval_outcome")[-1]
@@ -189,12 +197,14 @@ def test_real_llm_rag_contracts() -> None:
         assert prediction_final["evidence_kind"] == "model_prediction"
         assert prediction_outcome["status"] == "insufficient"
         assert "material_mismatch" in prediction_outcome["reason_codes"]
+        assert "plan_retrieval" in prediction_nodes
+        assert "retrieve_records" in prediction_nodes
         assert "run_prediction" in prediction_nodes
         assert _event_data(prediction_events, "prediction_started")
         assert prediction_final["citations"] == []
         prediction = prediction_final["prediction"]
         assert prediction is not None
-        assert prediction["formula_std"] == "Mn3GaN"
+        assert prediction["formula_std"] == "Mn3ZnN"
         assert 1 <= len(prediction["routes"]) <= 3
         assert "未由当前真实文献或实验记录验证" in prediction_final["answer"]
 

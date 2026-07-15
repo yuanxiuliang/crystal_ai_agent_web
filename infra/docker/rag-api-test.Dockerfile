@@ -6,7 +6,7 @@ FROM ${BASE_IMAGE}
 USER root
 RUN python -m pip install --no-cache-dir --prefer-binary \
       --index-url https://pypi.tuna.tsinghua.edu.cn/simple \
-      "pytest>=8.2.0" "pytest-asyncio>=0.23.0" "ruff>=0.6.0"
+      "pytest>=8.2.0" "pytest-asyncio>=0.23.0" "ruff>=0.6.0" "httpx>=0.27.0,<1"
 
 USER agentweb
 WORKDIR /opt/agentweb/services/rag-api

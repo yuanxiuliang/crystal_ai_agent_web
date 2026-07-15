@@ -76,9 +76,57 @@ jobs:
       - name: Verify deployment assets
         run: |
           test -f infra/compose/docker-compose.x1c.yml
+          test -f infra/compose/docker-compose.e2e.yml
           test -f infra/compose/.env.x1c.example
           test -f infra/docker/rag-api.Dockerfile
           test -f infra/docker/rag-web.Dockerfile
           test -f rawData.jsonl
           test -x scripts/deploy-x1c-rag.sh
           test -x scripts/x1c-auto-deploy.sh
+          test -x e2e/run-rag-e2e.sh
+          test -f e2e/fixtures/growth_records.text_only.jsonl
+
+  rag-e2e:
+    name: Real LLM RAG end-to-end
+    needs: [backend, frontend, deployment-assets]
+    # Real LLM credentials must never be exposed to pull-request code. The protected main push
+    # and a manually triggered run execute this release gate after the non-secret PR checks.
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      RAG_E2E_LLM_BASE_URL: ${{ secrets.RAG_E2E_LLM_BASE_URL }}
+      RAG_E2E_LLM_API_KEY: ${{ secrets.RAG_E2E_LLM_API_KEY }}
+      RAG_E2E_LLM_MODEL: ${{ secrets.RAG_E2E_LLM_MODEL }}
+      RAG_E2E_IMAGE_PROXY: docker.1ms.run
+      npm_config_registry: https://registry.npmmirror.com
+      PLAYWRIGHT_DOWNLOAD_HOST: https://npmmirror.com/mirrors/playwright
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Require real LLM configuration
+        run: |
+          test -n "$RAG_E2E_LLM_BASE_URL"
+          test -n "$RAG_E2E_LLM_API_KEY"
+          test -n "$RAG_E2E_LLM_MODEL"
+      - name: Install browser test dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Run disposable RAG end-to-end tests
+        run: ./e2e/run-rag-e2e.sh
+      - name: Upload browser diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rag-e2e-browser-diagnostics
+          path: |
+            playwright-report
+            test-results
+          if-no-files-found: ignore

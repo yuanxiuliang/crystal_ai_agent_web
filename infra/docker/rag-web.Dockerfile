@@ -1,4 +1,5 @@
-FROM node:22-bookworm-slim AS build
+ARG BASE_IMAGE=node:22-bookworm-slim
+FROM ${BASE_IMAGE} AS build
 
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
     COREPACK_NPM_REGISTRY=https://registry.npmmirror.com \
@@ -31,7 +32,7 @@ ENV NEXT_PUBLIC_RAG_API_BASE_URL="" \
 
 RUN pnpm --filter @agentweb/rag-platform build
 
-FROM node:22-bookworm-slim
+FROM ${BASE_IMAGE}
 
 ENV NODE_ENV=production \
     PORT=3003 \

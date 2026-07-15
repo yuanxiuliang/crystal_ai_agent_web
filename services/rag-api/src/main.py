@@ -12,6 +12,7 @@ from .api.chat import router as chat_router
 from .api.conversations import router as conversations_router
 from .api.prediction import router as prediction_router
 from .config import settings
+from .llm.factory import get_llm_backend_name
 from .memory.checkpointer import (
     close_default_checkpointer_runtime,
     get_default_checkpointer_runtime,
@@ -55,6 +56,7 @@ async def health() -> dict[str, str]:
         if checkpointer_runtime.enabled
         else "bounded-store",
         "prediction": "enabled" if settings.prediction_enabled else "disabled",
+        "llm_backend": get_llm_backend_name(),
     }
 
 

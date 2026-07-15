@@ -1,0 +1,154 @@
+name: agentweb-rag-e2e
+
+x-rag-runtime: &rag-runtime
+  image: agentweb-rag-api:e2e
+  build:
+    context: ../..
+    dockerfile: infra/docker/rag-api.Dockerfile
+    args:
+      BASE_IMAGE: ${RAG_E2E_API_BASE_IMAGE:-python:3.12-slim-bookworm}
+  environment:
+    RAG_API_HOST: 0.0.0.0
+    RAG_API_PORT: 8003
+    RAG_API_CORS_ORIGINS: http://localhost:3003
+    RETRIEVAL_PROVIDER: milvus-hybrid
+    MILVUS_URI: http://milvus-standalone:19530
+    MILVUS_COLLECTION: growth_records_e2e
+    EMBEDDING_PROVIDER: local
+    EMBEDDING_MODEL: sentence-transformers/all-MiniLM-L6-v2
+    EMBEDDING_BACKEND: onnx
+    EMBEDDING_ONNX_MODEL_PATH: /opt/agentweb/models/all-MiniLM-L6-v2-int8/onnx/model_quint8_avx2.onnx
+    EMBEDDING_TOKENIZER_PATH: /opt/agentweb/models/all-MiniLM-L6-v2-int8
+    EMBEDDING_DIM: 384
+    EMBEDDING_BATCH_SIZE: 4
+    EMBEDDING_MAX_LENGTH: 256
+    EMBEDDING_DEVICE: cpu
+    MEMORY_DATABASE_URL: postgresql://e2e:e2e@postgres:5432/e2e
+    PREDICTION_DATABASE_URL: postgresql://e2e:e2e@postgres:5432/e2e
+    MEMORY_CHECKPOINT_BACKEND: postgres
+    MEMORY_SEMANTIC_SEARCH_ENABLED: "false"
+    MEMORY_WORKER_POLL_SECONDS: 1
+    MEMORY_POSTGRES_CONNECT_TIMEOUT_SECONDS: 5
+    PREDICTION_ENABLED: "true"
+    PREDICTION_DEVICE: cpu
+    PREDICTION_TORCH_THREADS: 2
+    PREDICTION_MAX_CONCURRENCY: 1
+    PREDICTION_MODEL_DIR: /opt/agentweb/services/rag-api/models/growth-route-transformer/v2.0.0
+    LLM_PROVIDER: openai-compatible
+    LLM_BASE_URL: ${RAG_E2E_LLM_BASE_URL:?RAG_E2E_LLM_BASE_URL is required}
+    LLM_API_KEY: ${RAG_E2E_LLM_API_KEY:?RAG_E2E_LLM_API_KEY is required}
+    LLM_MODEL: ${RAG_E2E_LLM_MODEL:?RAG_E2E_LLM_MODEL is required}
+    LLM_TIMEOUT_SECONDS: 45
+    LLM_MAX_RETRIES: 1
+    AUTH_COOKIE_SECURE: "false"
+    OMP_NUM_THREADS: 2
+    OPENBLAS_NUM_THREADS: 2
+    MKL_NUM_THREADS: 2
+    TOKENIZERS_PARALLELISM: "false"
+    RAG_BOOTSTRAP_INPUT: /opt/agentweb/e2e/fixtures/growth_records.text_only.jsonl
+  volumes:
+    - ../../e2e/fixtures:/opt/agentweb/e2e/fixtures:ro
+  networks:
+    - data
+    - edge
+
+services:
+  postgres:
+    image: ${RAG_E2E_POSTGRES_IMAGE:-pgvector/pgvector:pg16}
+    environment:
+      POSTGRES_DB: e2e
+      POSTGRES_USER: e2e
+      POSTGRES_PASSWORD: e2e
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U e2e -d e2e"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+    networks:
+      - data
+
+  milvus-etcd:
+    image: ${RAG_E2E_ETCD_IMAGE:-quay.io/coreos/etcd:v3.5.18}
+    environment:
+      ETCD_AUTO_COMPACTION_MODE: revision
+      ETCD_AUTO_COMPACTION_RETENTION: "1000"
+      ETCD_QUOTA_BACKEND_BYTES: "4294967296"
+      ETCD_SNAPSHOT_COUNT: "50000"
+    command: etcd -advertise-client-urls=http://127.0.0.1:2379 -listen-client-urls=http://0.0.0.0:2379 --data-dir=/etcd
+    networks:
+      - data
+
+  milvus-minio:
+    image: ${RAG_E2E_MINIO_IMAGE:-minio/minio:RELEASE.2024-12-18T13-15-44Z}
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+    command: minio server /minio_data
+    networks:
+      - data
+
+  milvus-standalone:
+    image: ${RAG_E2E_MILVUS_IMAGE:-milvusdb/milvus:v2.6.0}
+    command: ["milvus", "run", "standalone"]
+    security_opt:
+      - seccomp:unconfined
+    environment:
+      ETCD_ENDPOINTS: milvus-etcd:2379
+      MINIO_ADDRESS: milvus-minio:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+    depends_on:
+      - milvus-etcd
+      - milvus-minio
+    networks:
+      - data
+
+  rag-bootstrap:
+    <<: *rag-runtime
+    command: ["sh", "/opt/agentweb/infra/docker/entrypoints/rag-bootstrap.sh"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      milvus-standalone:
+        condition: service_started
+    restart: "no"
+
+  rag-api:
+    <<: *rag-runtime
+    ports:
+      - "127.0.0.1:${RAG_E2E_API_PORT:-18003}:8003"
+    depends_on:
+      rag-bootstrap:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"from urllib.request import urlopen; assert urlopen('http://127.0.0.1:8003/api/rag/health', timeout=3).status == 200\""]
+      interval: 5s
+      timeout: 3s
+      retries: 24
+
+  rag-web:
+    image: agentweb-rag-web:e2e
+    build:
+      context: ../..
+      dockerfile: infra/docker/rag-web.Dockerfile
+      args:
+        BASE_IMAGE: ${RAG_E2E_WEB_BASE_IMAGE:-node:22-bookworm-slim}
+    ports:
+      - "127.0.0.1:${RAG_E2E_WEB_PORT:-13003}:3003"
+    depends_on:
+      rag-api:
+        condition: service_healthy
+    networks:
+      - edge
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://127.0.0.1:3003/login').then((response) => { if (!response.ok) process.exit(1); }).catch(() => process.exit(1));\""]
+      interval: 5s
+      timeout: 3s
+      retries: 24
+
+networks:
+  data:
+    internal: true
+  edge:

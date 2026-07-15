@@ -10,6 +10,7 @@
     "typecheck": "pnpm -r typecheck"
   },
   "devDependencies": {
+    "@playwright/test": "1.51.1",
     "typescript": "^5.7.0"
   }
 }

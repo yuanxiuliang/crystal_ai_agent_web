@@ -12,10 +12,19 @@ developer commit and push to main
   -> production Compose deployment
 ```
 
-GitHub CI runs backend lint/tests, RAG Web type checking/building, and deployment shell/asset
-checks. The production Compose definition is validated by the X1C candidate promotion path before
-any production container is changed. The workflow file is `.github/workflows/ci.yml`; its exact
-workflow identity is part of the X1C deployment contract.
+GitHub CI runs backend lint/tests, RAG Web type checking/building, deployment shell/asset checks,
+and a disposable real-LLM RAG end-to-end stack. The end-to-end job starts isolated PostgreSQL,
+Milvus, MiniLM, prediction, API, and Web services with a five-record synthetic corpus. It checks
+authentication, user isolation, PostgreSQL-backed short and long memory, exact-record retrieval,
+prediction fallback, evidence-only limits, SSE contracts, browser rendering, and idempotent
+bootstrap. The production Compose definition is then validated by the X1C candidate promotion path
+before any production container is changed. The workflow file is `.github/workflows/ci.yml`; its
+exact workflow identity is part of the X1C deployment contract.
+
+The GitHub repository must define `RAG_E2E_LLM_BASE_URL`, `RAG_E2E_LLM_API_KEY`, and
+`RAG_E2E_LLM_MODEL` as Actions secrets. They are injected only into the `main` push or manually
+triggered E2E job, never into pull-request code. A missing or unavailable real LLM makes that
+workflow fail, so the X1C timer cannot promote the revision. Details are in `docs/rag-e2e-ci.md`.
 
 The X1C poller never deploys a commit that lacks a successful GitHub CI run. It then creates a
 detached worktree under `/home/yuanx/agentweb-rag-releases/<commit>`, builds a candidate API image
@@ -86,10 +95,9 @@ its detached worktree for diagnosis. The timer deliberately does not repeatedly 
 failing commit. After correcting the issue, push a new commit. To intentionally retry the same
 commit, remove only its matching failed marker and start the CD service again.
 
-## Scope Of The First Version
+## Resource Boundary
 
-This first delivery pipeline validates the production-like backend image in an isolated test
-container and validates the frontend in GitHub CI. It does not launch a second Milvus/PostgreSQL
-stack per commit, which avoids doubling database memory and re-embedding the 6,292-record corpus
-on the X1C. A later hardening phase can add disposable end-to-end Compose tests for selected
-release candidates without changing the production promotion contract.
+The full disposable Milvus/PostgreSQL E2E stack runs in GitHub Actions, never on the X1C. The X1C
+candidate gate remains a network-disabled API container and does not re-embed the 6,292-record
+production corpus. This preserves the X1C's CPU and memory budget while making the GitHub CI
+result the required real-LLM release gate.

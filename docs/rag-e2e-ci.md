@@ -45,4 +45,10 @@ pnpm exec playwright install chromium
 
 `RAG_E2E_IMAGE_PROXY` is optional. It lets a domestic developer network or self-hosted runner
 pull all disposable-stack images through a registry proxy without changing the production
-Dockerfiles. For example: `export RAG_E2E_IMAGE_PROXY=docker.1ms.run`.
+Dockerfiles. GitHub-hosted runners must leave it unset and pull the official base images directly;
+registry proxies can reject GitHub Runner traffic or return incomplete image layers. For a domestic
+developer network, use a currently reachable proxy such as:
+
+```bash
+export RAG_E2E_IMAGE_PROXY=docker.1ms.run
+```

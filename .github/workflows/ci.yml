@@ -100,7 +100,6 @@ jobs:
       RAG_E2E_LLM_BASE_URL: ${{ secrets.RAG_E2E_LLM_BASE_URL }}
       RAG_E2E_LLM_API_KEY: ${{ secrets.RAG_E2E_LLM_API_KEY }}
       RAG_E2E_LLM_MODEL: ${{ secrets.RAG_E2E_LLM_MODEL }}
-      RAG_E2E_IMAGE_PROXY: docker.1ms.run
       npm_config_registry: https://registry.npmmirror.com
       PLAYWRIGHT_DOWNLOAD_HOST: https://npmmirror.com/mirrors/playwright
     steps:

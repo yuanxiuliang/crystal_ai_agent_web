@@ -78,6 +78,7 @@ jobs:
           test -f infra/compose/docker-compose.x1c.yml
           test -f infra/compose/docker-compose.e2e.yml
           test -f infra/compose/.env.x1c.example
+          test -f infra/relay/nginx/aicrystal.yuanxiuliang.cn.conf
           test -f infra/docker/rag-api.Dockerfile
           test -f infra/docker/rag-web.Dockerfile
           test -f rawData.jsonl
@@ -85,6 +86,7 @@ jobs:
           test -x scripts/x1c-auto-deploy.sh
           test -x e2e/run-rag-e2e.sh
           test -f e2e/fixtures/growth_records.text_only.jsonl
+          grep -Fq 'proxy_cache off;' infra/relay/nginx/aicrystal.yuanxiuliang.cn.conf
 
   rag-e2e:
     name: Real LLM RAG end-to-end

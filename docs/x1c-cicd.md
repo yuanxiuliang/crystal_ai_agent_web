@@ -44,6 +44,23 @@ The X1C checkout is release-only. It advances by checking out the exact tested c
 HEAD mode, which also works with the shallow first clone. The updater refuses any tracked local
 change before doing so; application configuration remains in ignored files outside Git history.
 
+## Public Relay Cache Rule
+
+The public relay configuration is versioned at
+`infra/relay/nginx/aicrystal.yuanxiuliang.cn.conf`. It must explicitly disable `proxy_cache` for
+both `/api/` and `/`. The relay Nginx installation enables a global proxy-cache zone for unrelated
+sites; leaving the web `location /` block unqualified can otherwise retain a prior Next HTML
+response and its old JavaScript asset references after a successful X1C deployment.
+
+Install or update the versioned virtual host as root, then validate and reload Nginx:
+
+```bash
+install -m 0644 infra/relay/nginx/aicrystal.yuanxiuliang.cn.conf \
+  /www/server/panel/vhost/nginx/aicrystal.yuanxiuliang.cn.conf
+nginx -t
+systemctl reload nginx
+```
+
 ## First Bootstrap
 
 The first CI/CD-enabled commit must already be present on GitHub. On the X1C, run the committed

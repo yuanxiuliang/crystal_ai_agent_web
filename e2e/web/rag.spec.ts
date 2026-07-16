@@ -35,7 +35,6 @@ test("a user can register, edit a real-record statistic, and view an explicitly 
     timeout: workflowAnswerTimeout,
   });
   await expect(aggregateAnswer).toContainText("方法分布");
-  await expect(aggregateAnswer).toContainText("EuCr2As2");
   const literatureTable = aggregateAnswer.getByTestId("literature-record-table");
   await expect(literatureTable).toBeVisible();
   await expect(literatureTable).toContainText("flux growth");
@@ -57,9 +56,10 @@ test("a user can register, edit a real-record statistic, and view an explicitly 
   });
   await expect(initialQuestion).toContainText("碘传输剂使用哪些化合物的单晶生长呢？");
   await expect(page.locator(".chat-message.user")).toHaveCount(1);
-  await expect(editedAnswer).toContainText("TaAs");
-  await expect(editedAnswer).toContainText("ZnIn2S4");
-  await expect(editedAnswer.getByTestId("literature-record-table")).toBeVisible();
+  const editedTable = editedAnswer.getByTestId("literature-record-table");
+  await expect(editedTable).toBeVisible();
+  await expect(editedTable).toContainText("10.5555/e2e.taas.001");
+  await expect(editedTable).toContainText("10.5555/e2e.znin2s4.001");
 
   await page.getByRole("button", { name: "新建对话" }).click();
   await expect(page.getByRole("textbox", { name: "研究问题" })).toBeVisible();

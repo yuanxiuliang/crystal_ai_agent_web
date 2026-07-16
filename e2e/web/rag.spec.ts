@@ -16,8 +16,20 @@ async function login(page: Page, userEmail: string, value = password): Promise<v
 
 async function ask(page: Page, question: string): Promise<void> {
   const composer = page.getByRole("textbox", { name: "研究问题" });
+  await expect(composer).toBeEditable({ timeout: workflowAnswerTimeout });
   await composer.fill(question);
-  await page.getByTitle("发送").click();
+  const send = page.getByTitle("发送");
+  await expect(send).toBeEnabled({ timeout: workflowAnswerTimeout });
+  await send.click();
+}
+
+async function startNewSession(page: Page): Promise<void> {
+  const previousUrl = page.url();
+  await page.getByRole("button", { name: "新建对话" }).click();
+  await expect.poll(() => page.url(), { timeout: 20_000 }).not.toBe(previousUrl);
+  await expect(page.getByRole("textbox", { name: "研究问题" })).toBeEditable({
+    timeout: workflowAnswerTimeout,
+  });
 }
 
 test("a user can register, edit a real-record statistic, and view an explicitly unverified prediction", async ({ page }) => {
@@ -61,8 +73,7 @@ test("a user can register, edit a real-record statistic, and view an explicitly 
   await expect(editedTable).toContainText("10.5555/e2e.taas.001");
   await expect(editedTable).toContainText("10.5555/e2e.znin2s4.001");
 
-  await page.getByRole("button", { name: "新建对话" }).click();
-  await expect(page.getByRole("textbox", { name: "研究问题" })).toBeVisible();
+  await startNewSession(page);
   await ask(page, "我要做 Mn3ZnN");
   const predictionAnswer = page.locator(".chat-message.assistant").last();
   await expect(predictionAnswer.getByText("可尝试方案 · 模型预测 · 未验证")).toBeVisible({

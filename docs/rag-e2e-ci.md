@@ -1,7 +1,8 @@
 # RAG End-to-End CI Contract
 
 The `rag-e2e` GitHub Actions job starts a disposable RAG stack. It uses an isolated PostgreSQL
-database, Milvus, MinIO, etcd, a five-record MiniLM corpus, the production API/Web Dockerfiles,
+database, Milvus, MinIO, etcd, a five-record MiniLM corpus, a paired small structured raw-record
+catalog fixture, the production API/Web Dockerfiles,
 and the vendored prediction model. It never mounts X1C volumes or production user data.
 
 The job requires three GitHub Actions secrets:
@@ -24,8 +25,11 @@ The test contract covers:
 6. user-scoped conversation access and PostgreSQL long-memory isolation;
 7. browser rendering of real-evidence records in the same structured table surface used by
    prediction routes, plus the explicitly unverified prediction variant;
-8. a second bootstrap run, which must reuse the complete test collection rather than re-embed it.
-9. editing an earlier user question, which must remove the later conversation branch, reset the
+8. element-family aggregate retrieval, including deterministic Eu matching, method statistics,
+   citations, and rejection of a prediction fallback;
+9. a second bootstrap run, which must reuse both the source-hashed structured catalog and the
+   complete MiniLM test collection rather than re-embed it;
+10. editing an earlier user question, which must remove the later conversation branch, reset the
    LangGraph short-term checkpoint, and regenerate from the retained earlier context only.
 
 The test uses synthetic `10.5555/e2e.*` DOI values and a unique `growth_records_e2e` collection.
@@ -53,3 +57,7 @@ developer network, use a currently reachable proxy such as:
 ```bash
 export RAG_E2E_IMAGE_PROXY=docker.1ms.run
 ```
+
+The API image intentionally uses the project-pinned `linux/amd64` CPU-only PyTorch wheel.
+`RAG_E2E_PLATFORM` therefore defaults to `linux/amd64`, including on Apple Silicon Macs, so local
+E2E validates the same runtime architecture as the X1C and GitHub runner.

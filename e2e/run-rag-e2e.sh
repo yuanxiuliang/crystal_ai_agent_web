@@ -7,6 +7,7 @@ COMPOSE_FILE="$ROOT_DIR/infra/compose/docker-compose.e2e.yml"
 TEST_IMAGE="${RAG_E2E_TEST_IMAGE:-agentweb-rag-api-test:e2e}"
 API_IMAGE="${RAG_E2E_API_IMAGE:-agentweb-rag-api:e2e}"
 WEB_PORT="${RAG_E2E_WEB_PORT:-13003}"
+E2E_PLATFORM="${RAG_E2E_PLATFORM:-linux/amd64}"
 
 # Docker Hub is the portable default. Set RAG_E2E_IMAGE_PROXY to a registry proxy such as
 # docker.1ms.run in domestic networks. Every image remains individually overrideable for a
@@ -47,6 +48,7 @@ cd "$ROOT_DIR"
 echo "[e2e] building production-like API and Web images"
 "${compose[@]}" build rag-api rag-web
 docker build \
+  --platform "$E2E_PLATFORM" \
   --build-arg "BASE_IMAGE=$API_IMAGE" \
   --tag "$TEST_IMAGE" \
   --file "$ROOT_DIR/infra/docker/rag-api-test.Dockerfile" \
@@ -78,6 +80,7 @@ curl --fail --silent --show-error --max-time 5 "http://127.0.0.1:${WEB_PORT}/log
 echo "[e2e] rerunning bootstrap to verify collection idempotency"
 bootstrap_output="$("${compose[@]}" run --rm --no-deps rag-bootstrap)"
 printf '%s\n' "$bootstrap_output"
+grep -Fq "catalog_status=ready" <<<"$bootstrap_output"
 grep -Fq "collection is ready; skipping import" <<<"$bootstrap_output"
 
 echo "[e2e] running real-LLM API contracts against the disposable stack"

@@ -5,6 +5,7 @@ attempts="${RAG_BOOTSTRAP_MAX_ATTEMPTS:-120}"
 delay_seconds="${RAG_BOOTSTRAP_RETRY_SECONDS:-2}"
 input_path="${RAG_BOOTSTRAP_INPUT:-/opt/agentweb/data/processed/growth_records.text_only.jsonl}"
 raw_input_path="${GROWTH_RECORDS_PATH:-/opt/agentweb/rawData.jsonl}"
+catalog_input_path="${RAG_CATALOG_INPUT:-${raw_input_path}}"
 
 if [ ! -f "${input_path}" ]; then
   if [ ! -f "${raw_input_path}" ]; then
@@ -35,6 +36,14 @@ while ! python -m src.cli.rag_memory_init; do
   attempt=$((attempt + 1))
   sleep "${delay_seconds}"
 done
+
+if [ ! -f "${catalog_input_path}" ]; then
+  echo "[bootstrap] structured catalog input is missing: ${catalog_input_path}" >&2
+  exit 1
+fi
+
+echo "[bootstrap] synchronizing structured real-record catalog without embeddings"
+python -m src.cli.rag_catalog_init --input "${catalog_input_path}"
 
 echo "[bootstrap] checking MiniLM Milvus collection"
 attempt=1

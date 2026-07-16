@@ -14,6 +14,7 @@ from ..memory.checkpointer import CheckpointerRuntime, get_default_checkpointer_
 from ..memory.store import MemoryStore, get_memory_store
 from ..prediction.factory import get_default_prediction_service
 from ..prediction.service import PredictionService
+from ..retrieval.fact_catalog import FactCatalog, get_default_fact_catalog
 from ..retrieval.embedding import EmbeddingClient, get_default_embedding_client
 from ..retrieval.factory import get_default_retrieval_service
 from ..retrieval.service import RetrievalService
@@ -22,9 +23,11 @@ from .nodes import (
     analyze_and_route,
     answer_direct,
     answer_from_prediction,
+    answer_with_aggregate_evidence,
     answer_with_evidence,
     answer_with_limits,
     assess_prediction_eligibility,
+    assess_aggregate_sufficiency,
     assess_retrieval_sufficiency,
     ask_clarification,
     build_evidence_pack,
@@ -33,8 +36,10 @@ from .nodes import (
     load_context,
     load_long_memory,
     plan_retrieval,
+    plan_aggregate_retrieval,
     prepare_turn,
     retrieve_records,
+    retrieve_aggregate_records,
     run_prediction,
     update_memory,
 )
@@ -50,12 +55,16 @@ NODE_LABELS = {
     "ask_clarification": "生成澄清问题",
     "answer_direct": "生成直接回答",
     "plan_retrieval": "生成检索计划",
+    "plan_aggregate_retrieval": "生成结构化统计检索计划",
     "retrieve_records": "检索单晶生长数据",
+    "retrieve_aggregate_records": "检索真实记录统计",
     "assess_retrieval_sufficiency": "判定真实记录是否充分",
+    "assess_aggregate_sufficiency": "核验统计检索证据",
     "build_evidence_pack": "整理检索证据",
     "assess_prediction_eligibility": "判断是否允许模型回退",
     "run_prediction": "生成候选生长路线",
     "answer_with_evidence": "基于真实记录生成回答",
+    "answer_with_aggregate_evidence": "汇总真实记录统计",
     "answer_from_prediction": "基于模型候选生成回答",
     "answer_with_limits": "生成受限回答",
     "update_memory": "更新会话记忆",
@@ -67,6 +76,7 @@ ANSWER_NODES = {
     "ask_clarification",
     "answer_direct",
     "answer_with_evidence",
+    "answer_with_aggregate_evidence",
     "answer_from_prediction",
     "answer_with_limits",
 }
@@ -82,11 +92,13 @@ class GrowthRAGGraph:
         prediction: PredictionService | None = None,
         memory_store: MemoryStore | None = None,
         checkpointer_runtime: CheckpointerRuntime | None = None,
+        fact_catalog: FactCatalog | None = None,
     ) -> None:
         self.llm = llm or get_default_llm_client()
         # The ONNX embedding session is the largest resident object in this service. Defer its
         # construction until a graph execution actually takes the retrieval branch.
         self.retrieval = retrieval
+        self.fact_catalog = fact_catalog
         self.prediction = prediction
         self.memory_store = memory_store or get_memory_store()
         self.checkpointer_runtime = checkpointer_runtime or get_default_checkpointer_runtime()
@@ -103,12 +115,16 @@ class GrowthRAGGraph:
         builder.add_node("ask_clarification", ask_clarification)
         builder.add_node("answer_direct", self._answer_direct_node)
         builder.add_node("plan_retrieval", plan_retrieval)
+        builder.add_node("plan_aggregate_retrieval", plan_aggregate_retrieval)
         builder.add_node("retrieve_records", self._retrieve_records_node)
+        builder.add_node("retrieve_aggregate_records", self._retrieve_aggregate_records_node)
         builder.add_node("assess_retrieval_sufficiency", assess_retrieval_sufficiency)
+        builder.add_node("assess_aggregate_sufficiency", assess_aggregate_sufficiency)
         builder.add_node("build_evidence_pack", build_evidence_pack)
         builder.add_node("assess_prediction_eligibility", assess_prediction_eligibility)
         builder.add_node("run_prediction", self._run_prediction_node)
         builder.add_node("answer_with_evidence", self._answer_with_evidence_node)
+        builder.add_node("answer_with_aggregate_evidence", answer_with_aggregate_evidence)
         builder.add_node("answer_from_prediction", answer_from_prediction)
         builder.add_node("answer_with_limits", self._answer_with_limits_node)
         builder.add_node("update_memory", self._update_memory_node)
@@ -130,12 +146,15 @@ class GrowthRAGGraph:
                 "ask_clarification": "ask_clarification",
                 "answer_direct": "answer_direct",
                 "plan_retrieval": "plan_retrieval",
+                "plan_aggregate_retrieval": "plan_aggregate_retrieval",
             },
         )
         builder.add_edge("ask_clarification", "update_memory")
         builder.add_edge("answer_direct", "update_memory")
         builder.add_edge("plan_retrieval", "retrieve_records")
+        builder.add_edge("plan_aggregate_retrieval", "retrieve_aggregate_records")
         builder.add_edge("retrieve_records", "assess_retrieval_sufficiency")
+        builder.add_edge("retrieve_aggregate_records", "assess_aggregate_sufficiency")
         builder.add_conditional_edges(
             "assess_retrieval_sufficiency",
             self._after_retrieval_assessment,
@@ -145,7 +164,19 @@ class GrowthRAGGraph:
                 "answer_with_limits": "answer_with_limits",
             },
         )
-        builder.add_edge("build_evidence_pack", "answer_with_evidence")
+        builder.add_conditional_edges(
+            "assess_aggregate_sufficiency",
+            self._after_aggregate_assessment,
+            {"build_evidence_pack": "build_evidence_pack", "answer_with_limits": "answer_with_limits"},
+        )
+        builder.add_conditional_edges(
+            "build_evidence_pack",
+            self._after_evidence_build,
+            {
+                "answer_with_evidence": "answer_with_evidence",
+                "answer_with_aggregate_evidence": "answer_with_aggregate_evidence",
+            },
+        )
         builder.add_conditional_edges(
             "assess_prediction_eligibility",
             self._after_prediction_eligibility,
@@ -160,6 +191,7 @@ class GrowthRAGGraph:
             },
         )
         builder.add_edge("answer_with_evidence", "update_memory")
+        builder.add_edge("answer_with_aggregate_evidence", "update_memory")
         builder.add_edge("answer_from_prediction", "update_memory")
         builder.add_edge("answer_with_limits", "update_memory")
         builder.add_edge("update_memory", "finalize_response")
@@ -190,6 +222,9 @@ class GrowthRAGGraph:
 
     async def _retrieve_records_node(self, state: GrowthRAGState) -> dict[str, Any]:
         return await retrieve_records(state, self._get_retrieval_service())
+
+    async def _retrieve_aggregate_records_node(self, state: GrowthRAGState) -> dict[str, Any]:
+        return await retrieve_aggregate_records(state, self._get_fact_catalog())
 
     async def _run_prediction_node(self, state: GrowthRAGState) -> dict[str, Any]:
         return await run_prediction(state, self._get_prediction_service())
@@ -227,6 +262,11 @@ class GrowthRAGGraph:
         if self.prediction is None:
             self.prediction = get_default_prediction_service()
         return self.prediction
+
+    def _get_fact_catalog(self) -> FactCatalog:
+        if self.fact_catalog is None:
+            self.fact_catalog = get_default_fact_catalog()
+        return self.fact_catalog
 
     def _semantic_memory_enabled(self) -> bool:
         value = settings.memory_semantic_search_enabled.strip().lower()
@@ -338,6 +378,8 @@ class GrowthRAGGraph:
             return "ask_clarification"
         if intent in {"direct_answer", "smalltalk", "unsupported"}:
             return "answer_direct"
+        if state.get("aggregate_query") is not None:
+            return "plan_aggregate_retrieval"
         return "plan_retrieval"
 
     @staticmethod
@@ -355,6 +397,19 @@ class GrowthRAGGraph:
     def _after_prediction_eligibility(state: GrowthRAGState) -> str:
         eligibility = state["prediction_eligibility"]
         return "run_prediction" if eligibility and eligibility["eligible"] else "answer_with_limits"
+
+    @staticmethod
+    def _after_aggregate_assessment(state: GrowthRAGState) -> str:
+        outcome = state["retrieval_outcome"]
+        return "build_evidence_pack" if outcome and outcome["status"] == "sufficient" else "answer_with_limits"
+
+    @staticmethod
+    def _after_evidence_build(state: GrowthRAGState) -> str:
+        return (
+            "answer_with_aggregate_evidence"
+            if state.get("aggregate_result") is not None
+            else "answer_with_evidence"
+        )
 
     @staticmethod
     def _after_prediction(state: GrowthRAGState) -> str:
@@ -410,12 +465,12 @@ class GrowthRAGGraph:
                 fatal_prepare_error = any(not item["recoverable"] for item in state["errors"])
             elif graph_node == "analyze_and_route":
                 yield StreamEvent("route_decision", state["route"] or {})
-            elif graph_node == "plan_retrieval" and state["retrieval_plan"]:
+            elif graph_node in {"plan_retrieval", "plan_aggregate_retrieval"} and state["retrieval_plan"]:
                 yield StreamEvent("retrieval_plan", state["retrieval_plan"])
-            elif graph_node == "retrieve_records":
+            elif graph_node in {"retrieve_records", "retrieve_aggregate_records"}:
                 for record in state["retrieved_records"]:
                     yield StreamEvent("retrieval_result", record)
-            elif graph_node == "assess_retrieval_sufficiency" and state["retrieval_outcome"]:
+            elif graph_node in {"assess_retrieval_sufficiency", "assess_aggregate_sufficiency"} and state["retrieval_outcome"]:
                 yield StreamEvent("retrieval_outcome", state["retrieval_outcome"])
                 yield StreamEvent("evidence_grade", state["evidence_grade"] or {})
             elif graph_node == "assess_prediction_eligibility" and state["prediction_eligibility"]:
@@ -426,7 +481,7 @@ class GrowthRAGGraph:
                     yield StreamEvent("prediction_warning", {"message": str(warning)})
 
             if graph_node in ANSWER_NODES:
-                if graph_node == "answer_with_evidence":
+                if graph_node in {"answer_with_evidence", "answer_with_aggregate_evidence"}:
                     for citation in state["citations"]:
                         yield StreamEvent("citation", citation)
                 if state["final_answer"]:
@@ -476,17 +531,28 @@ class GrowthRAGGraph:
             return "update_memory"
         if current == "plan_retrieval":
             return "retrieve_records"
+        if current == "plan_aggregate_retrieval":
+            return "retrieve_aggregate_records"
         if current == "retrieve_records":
             return "assess_retrieval_sufficiency"
+        if current == "retrieve_aggregate_records":
+            return "assess_aggregate_sufficiency"
         if current == "assess_retrieval_sufficiency":
             return self._after_retrieval_assessment(state)  # type: ignore[arg-type]
+        if current == "assess_aggregate_sufficiency":
+            return self._after_aggregate_assessment(state)  # type: ignore[arg-type]
         if current == "build_evidence_pack":
-            return "answer_with_evidence"
+            return self._after_evidence_build(state)  # type: ignore[arg-type]
         if current == "assess_prediction_eligibility":
             return self._after_prediction_eligibility(state)  # type: ignore[arg-type]
         if current == "run_prediction":
             return self._after_prediction(state)  # type: ignore[arg-type]
-        if current in {"answer_with_evidence", "answer_from_prediction", "answer_with_limits"}:
+        if current in {
+            "answer_with_evidence",
+            "answer_with_aggregate_evidence",
+            "answer_from_prediction",
+            "answer_with_limits",
+        }:
             return "update_memory"
         if current == "update_memory":
             return "finalize_response"

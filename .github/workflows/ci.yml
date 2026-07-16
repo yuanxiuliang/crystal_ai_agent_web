@@ -88,6 +88,10 @@ jobs:
           test -x scripts/x1c-auto-deploy.sh
           test -x e2e/run-rag-e2e.sh
           test -f e2e/fixtures/growth_records.text_only.jsonl
+          test -f e2e/fixtures/growth_records.raw.jsonl
+          test -f services/rag-api/src/retrieval/fact_catalog.py
+          grep -Fq 'RAG_CATALOG_INPUT' infra/docker/entrypoints/rag-bootstrap.sh
+          grep -Fq 'catalog_status=ready' e2e/run-rag-e2e.sh
           grep -Fq 'proxy_cache off;' infra/relay/nginx/aicrystal.yuanxiuliang.cn.conf
           grep -Fq 'StartLimitIntervalSec=0' infra/systemd/agentweb-rag-tunnel.service
           grep -Fq 'ExitOnForwardFailure=yes' infra/systemd/agentweb-rag-tunnel.service

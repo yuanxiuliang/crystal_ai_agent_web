@@ -2,6 +2,8 @@ from .analyze_and_route import analyze_and_route
 from .answer_direct import answer_direct
 from .answer_from_prediction import answer_from_prediction
 from .answer_with_evidence import answer_with_evidence
+from .answer_with_aggregate_evidence import answer_with_aggregate_evidence
+from .assess_aggregate_sufficiency import assess_aggregate_sufficiency
 from .answer_with_limits import answer_with_limits
 from .assess_prediction_eligibility import assess_prediction_eligibility
 from .assess_retrieval_sufficiency import assess_retrieval_sufficiency
@@ -13,8 +15,10 @@ from .grade_evidence import grade_evidence
 from .load_context import load_context
 from .load_long_memory import load_long_memory
 from .plan_retrieval import plan_retrieval
+from .plan_aggregate_retrieval import plan_aggregate_retrieval
 from .prepare_turn import prepare_turn
 from .retrieve_records import retrieve_records
+from .retrieve_aggregate_records import retrieve_aggregate_records
 from .run_prediction import run_prediction
 from .update_memory import update_memory
 
@@ -23,6 +27,8 @@ __all__ = [
     "answer_from_prediction",
     "analyze_and_route",
     "answer_with_evidence",
+    "answer_with_aggregate_evidence",
+    "assess_aggregate_sufficiency",
     "answer_with_limits",
     "assess_prediction_eligibility",
     "assess_retrieval_sufficiency",
@@ -34,8 +40,10 @@ __all__ = [
     "load_context",
     "load_long_memory",
     "plan_retrieval",
+    "plan_aggregate_retrieval",
     "prepare_turn",
     "retrieve_records",
+    "retrieve_aggregate_records",
     "run_prediction",
     "update_memory",
 ]

@@ -69,6 +69,8 @@ async def prepare_turn(
         "understanding": None,
         "route": None,
         "retrieval_plan": None,
+        "aggregate_query": None,
+        "aggregate_result": None,
         "retrieved_records": [],
         "usable_retrieved_records": [],
         "retrieval_error": None,

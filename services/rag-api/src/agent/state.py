@@ -10,6 +10,13 @@ RetrievalOutcomeStatus = Literal[
     "sufficient", "empty", "insufficient", "invalid_request", "unavailable"
 ]
 SelectedEvidenceKind = Literal["literature_record", "model_prediction"]
+RetrievalQueryKind = Literal["material_record", "aggregate_fact"]
+AggregateQueryKind = Literal[
+    "element_method_distribution",
+    "method_material_catalog",
+    "transport_agent_material_catalog",
+    "reactant_product_catalog",
+]
 
 
 class RuntimeOptions(TypedDict):
@@ -106,6 +113,7 @@ class RetrievalFilters(TypedDict):
 
 
 class RetrievalPlan(TypedDict):
+    query_kind: RetrievalQueryKind
     query_text: str
     dense_query: str
     sparse_query: str
@@ -115,6 +123,36 @@ class RetrievalPlan(TypedDict):
     relax_filters_if_empty: bool
     must_have: list[str]
     nice_to_have: list[str]
+
+
+class AggregateReactantFilter(TypedDict):
+    name: str
+    roles: list[str]
+
+
+class AggregateQuery(TypedDict):
+    kind: AggregateQueryKind
+    label: str
+    element: str | None
+    growth_method: str | None
+    reactants: list[AggregateReactantFilter]
+
+
+class AggregateGroup(TypedDict):
+    label: str
+    growth_method: str | None
+    record_count: int
+    formula_count: int
+    doi_count: int
+
+
+class AggregateResult(TypedDict):
+    query: AggregateQuery
+    total_records: int
+    total_formulas: int
+    total_dois: int
+    groups: list[AggregateGroup]
+    representatives: list[RetrievedRecord]
 
 
 class RetrievedRecord(TypedDict):
@@ -228,6 +266,7 @@ class FinalResponse(TypedDict):
     evidence_records: list[EvidenceRecord]
     route: RouteDecision | None
     retrieval: dict[str, Any] | None
+    aggregate: AggregateResult | None
     evidence_kind: SelectedEvidenceKind | None
     prediction: dict[str, Any] | None
     memory: dict[str, Any]
@@ -261,6 +300,8 @@ class GrowthRAGState(TypedDict):
     route: RouteDecision | None
 
     retrieval_plan: RetrievalPlan | None
+    aggregate_query: AggregateQuery | None
+    aggregate_result: AggregateResult | None
     retrieved_records: list[RetrievedRecord]
     usable_retrieved_records: list[RetrievedRecord]
     retrieval_error: GraphError | None

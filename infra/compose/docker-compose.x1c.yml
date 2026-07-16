@@ -12,6 +12,7 @@ x-rag-runtime: &rag-runtime
     RAG_API_PORT: 8003
     RETRIEVAL_PROVIDER: milvus-hybrid
     GROWTH_RECORDS_PATH: /opt/agentweb/rawData.jsonl
+    RAG_CATALOG_INPUT: /opt/agentweb/rawData.jsonl
     MILVUS_URI: http://milvus-standalone:19530
     MILVUS_COLLECTION: growth_records_minilm
     EMBEDDING_PROVIDER: local

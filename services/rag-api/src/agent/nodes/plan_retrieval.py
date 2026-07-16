@@ -39,6 +39,7 @@ async def plan_retrieval(state: GrowthRAGState) -> dict:
     }
     query = understanding["normalized_question"]
     plan: RetrievalPlan = {
+        "query_kind": "material_record",
         "query_text": query,
         "dense_query": query,
         "sparse_query": " ".join([query, formula or "", method or ""]).strip(),

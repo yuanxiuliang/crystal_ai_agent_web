@@ -158,6 +158,29 @@ def test_real_llm_rag_contracts() -> None:
         )
         _assert_no_untrusted_dois(literature_final["answer"], {"10.5555/e2e.taas.001"})
 
+        aggregate_session = _new_session(alice)
+        aggregate_events = _stream_chat(
+            alice, aggregate_session, "Eu基化合物一般采用哪些单晶生长方法？"
+        )
+        aggregate_final = _final(aggregate_events)
+        aggregate_nodes = _node_names(aggregate_events)
+        aggregate_outcome = _event_data(aggregate_events, "retrieval_outcome")[-1]
+        assert aggregate_final["evidence_kind"] == "literature_record"
+        assert aggregate_final["prediction"] is None
+        assert aggregate_final["retrieval"]["mode"] == "aggregate_fact"
+        assert aggregate_outcome["status"] == "sufficient"
+        assert "plan_aggregate_retrieval" in aggregate_nodes
+        assert "retrieve_aggregate_records" in aggregate_nodes
+        assert "run_prediction" not in aggregate_nodes
+        assert aggregate_final["aggregate"]["total_records"] == 2
+        assert aggregate_final["aggregate"]["total_formulas"] == 2
+        assert "真实记录统计" in aggregate_final["answer"]
+        assert "方法分布" in aggregate_final["answer"]
+        assert {item["doi"] for item in aggregate_final["citations"]} == {
+            "10.5555/e2e.eucr2as2.001",
+            "10.5555/e2e.eute.001",
+        }
+
         follow_up_events = _stream_chat(alice, taas_session, "它的生长温度是多少？")
         follow_up_final = _final(follow_up_events)
         follow_up_outcome = _event_data(follow_up_events, "retrieval_outcome")[-1]

@@ -1,6 +1,9 @@
 name: agentweb-rag-e2e
 
 x-rag-runtime: &rag-runtime
+  # The production predictor intentionally pins an x86_64 CPU-only PyTorch wheel. Force the
+  # disposable contract stack to the same architecture on Apple Silicon development hosts.
+  platform: ${RAG_E2E_PLATFORM:-linux/amd64}
   image: agentweb-rag-api:e2e
   build:
     context: ../..
@@ -46,6 +49,7 @@ x-rag-runtime: &rag-runtime
     MKL_NUM_THREADS: 2
     TOKENIZERS_PARALLELISM: "false"
     RAG_BOOTSTRAP_INPUT: /opt/agentweb/e2e/fixtures/growth_records.text_only.jsonl
+    RAG_CATALOG_INPUT: /opt/agentweb/e2e/fixtures/growth_records.raw.jsonl
   volumes:
     - ../../e2e/fixtures:/opt/agentweb/e2e/fixtures:ro
   networks:
@@ -129,6 +133,7 @@ services:
       retries: 24
 
   rag-web:
+    platform: ${RAG_E2E_PLATFORM:-linux/amd64}
     image: agentweb-rag-web:e2e
     build:
       context: ../..

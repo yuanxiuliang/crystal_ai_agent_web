@@ -9,6 +9,7 @@ async def finalize_response(state: GrowthRAGState) -> dict:
     if state["retrieval_plan"]:
         retrieval = {
             "query": state["retrieval_plan"]["query_text"],
+            "mode": state["retrieval_plan"]["query_kind"],
             "filters": state["retrieval_plan"]["filters"],
             "top_k": state["retrieval_plan"]["top_k"],
             "result_count": len(state["retrieved_records"]),
@@ -29,6 +30,7 @@ async def finalize_response(state: GrowthRAGState) -> dict:
         ),
         "route": state["route"],
         "retrieval": retrieval,
+        "aggregate": state["aggregate_result"],
         "evidence_kind": state["selected_evidence_kind"],
         "prediction": state["prediction_result"],
         "memory": {

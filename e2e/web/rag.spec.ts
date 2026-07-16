@@ -50,6 +50,16 @@ test("a user can register, view real evidence, and view an explicitly unverified
 
   await page.getByRole("button", { name: "新建对话" }).click();
   await expect(page.getByRole("textbox", { name: "研究问题" })).toBeVisible();
+  await ask(page, "Eu基化合物一般采用哪些单晶生长方法？");
+  const aggregateAnswer = page.locator(".chat-message.assistant").last();
+  await expect(aggregateAnswer.getByText("真实记录统计")).toBeVisible({ timeout: 120_000 });
+  await expect(aggregateAnswer).toContainText("方法分布");
+  await expect(aggregateAnswer).toContainText("EuCr2As2");
+  await expect(aggregateAnswer.getByTestId("literature-record-table")).toBeVisible();
+  await expect(aggregateAnswer.getByText(/条文献证据/)).toBeVisible();
+
+  await page.getByRole("button", { name: "新建对话" }).click();
+  await expect(page.getByRole("textbox", { name: "研究问题" })).toBeVisible();
   await ask(page, "我要做 Mn3ZnN");
   const predictionAnswer = page.locator(".chat-message.assistant").last();
   await expect(predictionAnswer.getByText("可尝试方案 · 模型预测 · 未验证")).toBeVisible({

@@ -54,6 +54,7 @@ export type RouteDecision = {
 };
 
 export type RetrievalTrace = {
+  mode?: "material_record" | "aggregate_fact";
   query: string;
   filters: Record<string, unknown>;
   top_k: number;
@@ -63,6 +64,25 @@ export type RetrievalTrace = {
     status: "sufficient" | "empty" | "insufficient" | "invalid_request" | "unavailable";
     reason_codes: string[];
   } | null;
+};
+
+export type AggregateGroup = {
+  label: string;
+  growth_method: string | null;
+  record_count: number;
+  formula_count: number;
+  doi_count: number;
+};
+
+export type AggregateResult = {
+  query: {
+    kind: string;
+    label: string;
+  };
+  total_records: number;
+  total_formulas: number;
+  total_dois: number;
+  groups: AggregateGroup[];
 };
 
 export type PredictionRoute = {
@@ -94,6 +114,7 @@ export type FinalResponse = {
   evidence_records: LiteratureEvidenceRecord[];
   route: RouteDecision | null;
   retrieval: RetrievalTrace | null;
+  aggregate: AggregateResult | null;
   evidence_kind: "literature_record" | "model_prediction" | null;
   prediction: PredictionResult | null;
   memory: {

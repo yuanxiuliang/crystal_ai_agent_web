@@ -65,12 +65,16 @@ const NODE_ACTIVITIES: Partial<Record<string, WorkflowActivity>> = {
   ask_clarification: { phase: "补充信息", message: "正在整理需要补充的条件" },
   answer_direct: { phase: "整理回答", message: "正在根据当前会话整理回答" },
   plan_retrieval: { phase: "检索真实记录", message: "正在准备检索真实实验记录" },
+  plan_aggregate_retrieval: { phase: "构建统计检索", message: "正在准备结构化真实记录统计" },
   retrieve_records: { phase: "检索真实记录", message: "正在检索真实实验记录" },
+  retrieve_aggregate_records: { phase: "检索真实记录", message: "正在按精确条件汇总真实记录" },
   assess_retrieval_sufficiency: { phase: "核验证据", message: "正在核验材料匹配与证据完整性" },
+  assess_aggregate_sufficiency: { phase: "核验证据", message: "正在核验统计条件与来源记录" },
   build_evidence_pack: { phase: "整理证据", message: "正在整理文献证据与实验参数" },
   assess_prediction_eligibility: { phase: "判断路径", message: "正在判断可用证据与回答路径" },
   run_prediction: { phase: "候选路线预测", message: "正在生成候选单晶生长路径" },
   answer_with_evidence: { phase: "撰写回答", message: "正在撰写基于真实记录的回答" },
+  answer_with_aggregate_evidence: { phase: "撰写回答", message: "正在汇总真实记录统计与代表性证据" },
   answer_from_prediction: { phase: "撰写回答", message: "正在整理未验证候选方案" },
   answer_with_limits: { phase: "说明限制", message: "正在整理当前可确认的信息与限制" },
 };
@@ -131,6 +135,7 @@ type AssistantMessageProps = {
 function AssistantMessage({ message, onOpenEvidence, isPending, activity, activityTrail }: AssistantMessageProps) {
   const response = message.response;
   const prediction = response?.evidence_kind === "model_prediction" ? response.prediction : null;
+  const aggregateEvidence = response?.retrieval?.mode === "aggregate_fact";
   const citations: Citation[] = response?.citations ?? [];
   const evidenceRecords = response?.evidence_kind === "literature_record"
     ? response.evidence_records ?? []
@@ -139,7 +144,7 @@ function AssistantMessage({ message, onOpenEvidence, isPending, activity, activi
   return (
     <div className="assistant-content">
       {prediction ? <div className="message-kicker model-kicker">可尝试方案 · 模型预测 · 未验证</div> : null}
-      {response?.evidence_kind === "literature_record" ? <div className="message-kicker">真实记录回答</div> : null}
+      {response?.evidence_kind === "literature_record" ? <div className="message-kicker">{aggregateEvidence ? "真实记录统计" : "真实记录回答"}</div> : null}
       {prediction ? (
         <div className="prediction-content">
           <MarkdownAnswer content={predictionIntroduction(message.content)} />
@@ -495,6 +500,13 @@ export function ChatShell() {
               if (nextActivity) recordActivity(nextActivity);
             }
             if (event.event === "retrieval_plan") {
+              if (event.data.query_kind === "aggregate_fact") {
+                recordActivity({
+                  phase: "检索真实记录",
+                  message: "正在按元素、方法或原料条件汇总真实记录",
+                });
+                return;
+              }
               const formula = plannedFormula(event.data);
               recordActivity({
                 phase: "检索真实记录",

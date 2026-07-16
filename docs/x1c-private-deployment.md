@@ -44,8 +44,11 @@ Then build and launch the private stack:
 ./scripts/deploy-x1c-rag.sh
 ```
 
-The `rag-bootstrap` one-shot service initializes PostgreSQL and the LangGraph checkpointer. When
-the derived text-only retrieval input is absent from a clean release checkout, it deterministically
+The `rag-bootstrap` one-shot service initializes PostgreSQL, the LangGraph checkpointer, and a
+small structured real-record catalog used for element, method, transport-agent, and raw-material
+reverse lookups. The catalog is derived from `rawData.jsonl` with a content hash and does not
+call the embedding runtime or recreate Milvus. When the derived text-only retrieval input is
+absent from a clean release checkout, it deterministically
 regenerates it from the versioned `rawData.jsonl` source before inspecting
 `growth_records_minilm`. It imports the 6,292 source records only when the collection is missing,
 empty, incomplete, or has a vector schema other than the fixed 384-dimensional MiniLM contract.

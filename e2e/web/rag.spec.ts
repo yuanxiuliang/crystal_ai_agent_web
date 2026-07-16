@@ -31,7 +31,7 @@ test("a user can register, edit a real-record statistic, and view an explicitly 
 
   await ask(page, "Eu基化合物一般采用哪些单晶生长方法？");
   const aggregateAnswer = page.locator(".chat-message.assistant").last();
-  await expect(aggregateAnswer.getByText("真实记录统计")).toBeVisible({
+  await expect(aggregateAnswer.locator(".message-kicker")).toHaveText("真实记录统计", {
     timeout: workflowAnswerTimeout,
   });
   await expect(aggregateAnswer).toContainText("方法分布");
@@ -52,7 +52,7 @@ test("a user can register, edit a real-record statistic, and view an explicitly 
     .fill("碘传输剂使用哪些化合物的单晶生长呢？");
   await initialQuestion.getByTitle("更新并重新生成").click();
   const editedAnswer = page.locator(".chat-message.assistant").last();
-  await expect(editedAnswer.getByText("真实记录统计")).toBeVisible({
+  await expect(editedAnswer.locator(".message-kicker")).toHaveText("真实记录统计", {
     timeout: workflowAnswerTimeout,
   });
   await expect(initialQuestion).toContainText("碘传输剂使用哪些化合物的单晶生长呢？");

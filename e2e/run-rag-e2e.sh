@@ -84,8 +84,10 @@ grep -Fq "catalog_status=ready" <<<"$bootstrap_output"
 grep -Fq "collection is ready; skipping import" <<<"$bootstrap_output"
 
 echo "[e2e] running real-LLM API contracts against the disposable stack"
+# The API joins both networks. Use data so the contract suite can verify persisted
+# PostgreSQL long-memory isolation as well as API responses through the service name.
 docker run --rm \
-  --network "${COMPOSE_PROJECT_NAME}_edge" \
+  --network "${COMPOSE_PROJECT_NAME}_data" \
   --mount "type=bind,src=$ROOT_DIR/e2e/api,dst=/opt/agentweb/e2e/api,readonly" \
   -e RAG_E2E_API_BASE_URL=http://rag-api:8003 \
   -e MEMORY_DATABASE_URL=postgresql://e2e:e2e@postgres:5432/e2e \

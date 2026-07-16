@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 const password = "e2e-password-12345";
-const realLlmAnswerTimeout = 180_000;
+const workflowAnswerTimeout = 90_000;
 
 function email(prefix: string): string {
   return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}@e2e.invalid`;
@@ -20,60 +20,53 @@ async function ask(page: Page, question: string): Promise<void> {
   await page.getByTitle("发送").click();
 }
 
-test("a user can register, view real evidence, and view an explicitly unverified prediction", async ({ page }) => {
-  // This browser journey makes four real LLM calls. Keep the assertions bounded while allowing
-  // the production-compatible provider enough time to return a complete streamed response.
-  test.setTimeout(12 * 60_000);
+test("a user can register, edit a real-record statistic, and view an explicitly unverified prediction", async ({ page }) => {
+  // The API E2E contract exercises successful real-LLM generation. This browser journey targets
+  // deterministic aggregate retrieval, edit/regeneration, and local prediction rendering.
+  test.setTimeout(4 * 60_000);
   const userEmail = email("browser");
   await login(page, userEmail);
   await expect(page).toHaveURL(/\/chat/);
   await expect(page.getByRole("textbox", { name: "研究问题" })).toBeVisible();
 
-  await ask(page, "TaAs 单晶怎么做？");
-  const literatureAnswer = page.locator(".chat-message.assistant").last();
-  await expect(literatureAnswer.getByText("真实记录回答")).toBeVisible({
-    timeout: realLlmAnswerTimeout,
+  await ask(page, "Eu基化合物一般采用哪些单晶生长方法？");
+  const aggregateAnswer = page.locator(".chat-message.assistant").last();
+  await expect(aggregateAnswer.getByText("真实记录统计")).toBeVisible({
+    timeout: workflowAnswerTimeout,
   });
-  await expect(literatureAnswer).toContainText("TaAs");
-  const literatureTable = literatureAnswer.getByTestId("literature-record-table");
+  await expect(aggregateAnswer).toContainText("方法分布");
+  await expect(aggregateAnswer).toContainText("EuCr2As2");
+  const literatureTable = aggregateAnswer.getByTestId("literature-record-table");
   await expect(literatureTable).toBeVisible();
-  await expect(literatureTable).toContainText("chemical vapor transport");
-  await expect(literatureTable).toContainText("10.5555/e2e.taas.001");
-  await expect(literatureAnswer.getByText(/条文献证据/)).toBeVisible();
-  await literatureAnswer.getByText(/条文献证据/).click();
-  await expect(page.getByLabel("证据来源")).toContainText("10.5555/e2e.taas.001");
+  await expect(literatureTable).toContainText("flux growth");
+  await expect(literatureTable).toContainText("10.5555/e2e.eucr2as2.001");
+  await expect(aggregateAnswer.getByText(/条文献证据/)).toBeVisible();
+  await aggregateAnswer.getByText(/条文献证据/).click();
+  await expect(page.getByLabel("证据来源")).toContainText("10.5555/e2e.eucr2as2.001");
   await page.getByTitle("关闭证据面板").click();
 
   const initialQuestion = page.locator(".chat-message.user").first();
   await initialQuestion.getByTitle("编辑问题").click();
-  await initialQuestion.getByRole("textbox", { name: "编辑问题" }).fill("EuCr2As2 单晶怎么做？");
+  await initialQuestion
+    .getByRole("textbox", { name: "编辑问题" })
+    .fill("碘传输剂使用哪些化合物的单晶生长呢？");
   await initialQuestion.getByTitle("更新并重新生成").click();
   const editedAnswer = page.locator(".chat-message.assistant").last();
-  await expect(editedAnswer.getByText("真实记录回答")).toBeVisible({
-    timeout: realLlmAnswerTimeout,
+  await expect(editedAnswer.getByText("真实记录统计")).toBeVisible({
+    timeout: workflowAnswerTimeout,
   });
-  await expect(initialQuestion).toContainText("EuCr2As2 单晶怎么做？");
+  await expect(initialQuestion).toContainText("碘传输剂使用哪些化合物的单晶生长呢？");
   await expect(page.locator(".chat-message.user")).toHaveCount(1);
-  await expect(editedAnswer).toContainText("EuCr2As2");
-
-  await page.getByRole("button", { name: "新建对话" }).click();
-  await expect(page.getByRole("textbox", { name: "研究问题" })).toBeVisible();
-  await ask(page, "Eu基化合物一般采用哪些单晶生长方法？");
-  const aggregateAnswer = page.locator(".chat-message.assistant").last();
-  await expect(aggregateAnswer.getByText("真实记录统计")).toBeVisible({
-    timeout: realLlmAnswerTimeout,
-  });
-  await expect(aggregateAnswer).toContainText("方法分布");
-  await expect(aggregateAnswer).toContainText("EuCr2As2");
-  await expect(aggregateAnswer.getByTestId("literature-record-table")).toBeVisible();
-  await expect(aggregateAnswer.getByText(/条文献证据/)).toBeVisible();
+  await expect(editedAnswer).toContainText("TaAs");
+  await expect(editedAnswer).toContainText("ZnIn2S4");
+  await expect(editedAnswer.getByTestId("literature-record-table")).toBeVisible();
 
   await page.getByRole("button", { name: "新建对话" }).click();
   await expect(page.getByRole("textbox", { name: "研究问题" })).toBeVisible();
   await ask(page, "我要做 Mn3ZnN");
   const predictionAnswer = page.locator(".chat-message.assistant").last();
   await expect(predictionAnswer.getByText("可尝试方案 · 模型预测 · 未验证")).toBeVisible({
-    timeout: realLlmAnswerTimeout,
+    timeout: workflowAnswerTimeout,
   });
   await expect(predictionAnswer).toContainText("Mn3ZnN");
   await expect(predictionAnswer.locator(".assistant-content")).toBeVisible();

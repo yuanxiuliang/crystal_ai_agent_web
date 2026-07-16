@@ -81,12 +81,18 @@ jobs:
           test -f infra/relay/nginx/aicrystal.yuanxiuliang.cn.conf
           test -f infra/docker/rag-api.Dockerfile
           test -f infra/docker/rag-web.Dockerfile
+          test -f infra/systemd/agentweb-rag.service
+          test -f infra/systemd/agentweb-rag-tunnel.service
           test -f rawData.jsonl
           test -x scripts/deploy-x1c-rag.sh
           test -x scripts/x1c-auto-deploy.sh
           test -x e2e/run-rag-e2e.sh
           test -f e2e/fixtures/growth_records.text_only.jsonl
           grep -Fq 'proxy_cache off;' infra/relay/nginx/aicrystal.yuanxiuliang.cn.conf
+          grep -Fq 'StartLimitIntervalSec=0' infra/systemd/agentweb-rag-tunnel.service
+          grep -Fq 'ExitOnForwardFailure=yes' infra/systemd/agentweb-rag-tunnel.service
+          grep -Fq -- '-R 127.0.0.1:13003:127.0.0.1:3003' infra/systemd/agentweb-rag-tunnel.service
+          grep -Fq -- '-R 127.0.0.1:18003:127.0.0.1:8003' infra/systemd/agentweb-rag-tunnel.service
 
   rag-e2e:
     name: Real LLM RAG end-to-end

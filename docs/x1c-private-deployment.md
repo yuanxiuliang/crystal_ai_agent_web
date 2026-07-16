@@ -83,7 +83,7 @@ Verify all of the following before enabling host autostart or configuring the pu
 5. `http://127.0.0.1:8003/api/rag/health` reports `memory_database=postgres` and
    `short_term_backend=postgres-checkpointer`.
 
-## Autostart
+## Boot And Autostart
 
 Enable autostart only after the private checks succeed:
 
@@ -92,9 +92,41 @@ cd /home/yuanx/agentweb-rag
 sudo ./scripts/install-x1c-systemd.sh
 ```
 
-The unit only starts existing images and volumes at boot. It deliberately does not rebuild or
-download images during boot. After a source update, run `./scripts/deploy-x1c-rag.sh` manually,
-check it, then the systemd unit will use the refreshed images on later restarts.
+The installer enables two independent, unattended services:
+
+- `agentweb-rag.service` starts the existing Docker images and volumes. It deliberately does not
+  rebuild images or download models at boot.
+- `agentweb-rag-tunnel.service` waits for `network-online.target`, then opens a reverse SSH
+  tunnel to the public relay. It publishes the web and API ports only on the relay loopback
+  address (`127.0.0.1:13003` and `127.0.0.1:18003`). Nginx is the only public-facing process.
+
+The tunnel uses SSH batch mode and a dedicated unencrypted private key at
+`~/.ssh/id_ed25519_agentweb_tunnel`; an unattended system service cannot enter a passphrase.
+Keep that private key owned by the deployment user with mode `0600`, and keep the relay host key
+in `~/.ssh/known_hosts`. `Restart=always` with `StartLimitIntervalSec=0` makes the tunnel keep
+retrying after a router, DNS, or relay outage rather than requiring an SSH login to recover.
+
+The Docker stack and tunnel do **not** depend on a graphical desktop login. On this X1C, Ubuntu's
+GDM configuration already enables automatic login for `yuanx` for local desktop convenience:
+
+```ini
+[daemon]
+AutomaticLoginEnable=true
+AutomaticLogin=yuanx
+```
+
+Keep `graphical.target`, `NetworkManager.service`, and `NetworkManager-wait-online.service`
+enabled. These ensure that the desktop starts automatically, Wi-Fi is given time to associate,
+and the tunnel starts only after the network has been declared online. After a source update, run
+`./scripts/deploy-x1c-rag.sh` manually, check it, then the systemd unit will use the refreshed
+images on later restarts.
+
+Inspect an unattended boot or reconnect with:
+
+```bash
+sudo systemctl status agentweb-rag.service agentweb-rag-tunnel.service --no-pager
+sudo journalctl -u agentweb-rag-tunnel.service -b --no-pager
+```
 
 ## Network Boundary
 

@@ -1,0 +1,16 @@
+[Unit]
+Description=AgentWeb RAG reverse SSH tunnel to public relay
+Wants=network-online.target
+After=network-online.target agentweb-rag.service
+# A home network or relay outage must not permanently rate-limit this tunnel.
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=__DEPLOY_USER__
+ExecStart=/usr/bin/ssh -N -i __DEPLOY_HOME__/.ssh/id_ed25519_agentweb_tunnel -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile=__DEPLOY_HOME__/.ssh/known_hosts -o ExitOnForwardFailure=yes -o ServerAliveInterval=30 -o ServerAliveCountMax=3 -o ConnectTimeout=15 -o LogLevel=ERROR -p 16140 -R 127.0.0.1:13003:127.0.0.1:3003 -R 127.0.0.1:18003:127.0.0.1:8003 agentweb-tunnel@38.207.177.24
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

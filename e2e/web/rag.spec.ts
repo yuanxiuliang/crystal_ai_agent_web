@@ -1,6 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 const password = "e2e-password-12345";
+const realLlmAnswerTimeout = 180_000;
 
 function email(prefix: string): string {
   return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}@e2e.invalid`;
@@ -20,6 +21,9 @@ async function ask(page: Page, question: string): Promise<void> {
 }
 
 test("a user can register, view real evidence, and view an explicitly unverified prediction", async ({ page }) => {
+  // This browser journey makes four real LLM calls. Keep the assertions bounded while allowing
+  // the production-compatible provider enough time to return a complete streamed response.
+  test.setTimeout(12 * 60_000);
   const userEmail = email("browser");
   await login(page, userEmail);
   await expect(page).toHaveURL(/\/chat/);
@@ -27,7 +31,9 @@ test("a user can register, view real evidence, and view an explicitly unverified
 
   await ask(page, "TaAs 单晶怎么做？");
   const literatureAnswer = page.locator(".chat-message.assistant").last();
-  await expect(literatureAnswer.getByText("真实记录回答")).toBeVisible({ timeout: 120_000 });
+  await expect(literatureAnswer.getByText("真实记录回答")).toBeVisible({
+    timeout: realLlmAnswerTimeout,
+  });
   await expect(literatureAnswer).toContainText("TaAs");
   const literatureTable = literatureAnswer.getByTestId("literature-record-table");
   await expect(literatureTable).toBeVisible();
@@ -43,7 +49,9 @@ test("a user can register, view real evidence, and view an explicitly unverified
   await initialQuestion.getByRole("textbox", { name: "编辑问题" }).fill("EuCr2As2 单晶怎么做？");
   await initialQuestion.getByTitle("更新并重新生成").click();
   const editedAnswer = page.locator(".chat-message.assistant").last();
-  await expect(editedAnswer.getByText("真实记录回答")).toBeVisible({ timeout: 120_000 });
+  await expect(editedAnswer.getByText("真实记录回答")).toBeVisible({
+    timeout: realLlmAnswerTimeout,
+  });
   await expect(initialQuestion).toContainText("EuCr2As2 单晶怎么做？");
   await expect(page.locator(".chat-message.user")).toHaveCount(1);
   await expect(editedAnswer).toContainText("EuCr2As2");
@@ -52,7 +60,9 @@ test("a user can register, view real evidence, and view an explicitly unverified
   await expect(page.getByRole("textbox", { name: "研究问题" })).toBeVisible();
   await ask(page, "Eu基化合物一般采用哪些单晶生长方法？");
   const aggregateAnswer = page.locator(".chat-message.assistant").last();
-  await expect(aggregateAnswer.getByText("真实记录统计")).toBeVisible({ timeout: 120_000 });
+  await expect(aggregateAnswer.getByText("真实记录统计")).toBeVisible({
+    timeout: realLlmAnswerTimeout,
+  });
   await expect(aggregateAnswer).toContainText("方法分布");
   await expect(aggregateAnswer).toContainText("EuCr2As2");
   await expect(aggregateAnswer.getByTestId("literature-record-table")).toBeVisible();
@@ -63,7 +73,7 @@ test("a user can register, view real evidence, and view an explicitly unverified
   await ask(page, "我要做 Mn3ZnN");
   const predictionAnswer = page.locator(".chat-message.assistant").last();
   await expect(predictionAnswer.getByText("可尝试方案 · 模型预测 · 未验证")).toBeVisible({
-    timeout: 120_000,
+    timeout: realLlmAnswerTimeout,
   });
   await expect(predictionAnswer).toContainText("Mn3ZnN");
   await expect(predictionAnswer.locator(".assistant-content")).toBeVisible();

@@ -7,6 +7,7 @@ from src.agent.graph import GrowthRAGGraph
 from src.memory.store import MemoryLimits, MemoryStore
 from src.retrieval.catalog_query import detect_aggregate_query, formula_elements
 from src.retrieval.fact_catalog import FactCatalog
+from src.retrieval.growth_records import normalize_growth_record
 from src.retrieval.service import RetrievalService
 
 
@@ -82,6 +83,19 @@ def test_catalog_query_detection_is_structured_and_formula_safe() -> None:
     assert [item["name"] for item in raw_query["reactants"]] == ["Ta", "As"]
 
 
+def test_growth_record_doi_prefers_explicit_field_and_rejects_non_doi_sample_prefix() -> None:
+    record = {
+        "sample_id": "e2e::explicit-doi::001",
+        "doi": "10.5555/e2e.explicit.001",
+        "formula": "TaAs",
+        "method": "CVT",
+    }
+    assert normalize_growth_record(record, "test")["doi"] == "10.5555/e2e.explicit.001"
+
+    record.pop("doi")
+    assert normalize_growth_record(record, "test")["doi"] is None
+
+
 def test_catalog_uses_exact_element_method_reactant_and_role_filters(tmp_path) -> None:
     catalog = _catalog(tmp_path)
 
@@ -91,6 +105,10 @@ def test_catalog_uses_exact_element_method_reactant_and_role_filters(tmp_path) -
     assert {(item["label"], item["record_count"]) for item in eu["groups"]} == {
         ("chemical vapor transport", 1),
         ("flux growth", 1),
+    }
+    assert {record["doi"] for record in eu["representatives"]} == {
+        "10.5555/e2e.eucr2as2.001",
+        "10.5555/e2e.eute.001",
     }
 
     flux = catalog.aggregate(detect_aggregate_query("Flux方法一般适用于哪些化合物？"))

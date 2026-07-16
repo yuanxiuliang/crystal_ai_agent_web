@@ -1,13 +1,17 @@
 from __future__ import annotations
 
+import re
 from typing import Any
 
 from ..agent.state import RetrievedRecord
 
 
+_DOI_PATTERN = re.compile(r"10\.\d{4,9}/\S+", re.IGNORECASE)
+
+
 def normalize_growth_record(raw: dict[str, Any], source_file: str) -> RetrievedRecord:
     sample_id = str(raw.get("sample_id") or "")
-    doi = sample_id.split("::", 1)[0] if "::" in sample_id else None
+    doi = _extract_doi(raw, sample_id)
     formula = _none_if_empty(raw.get("formula"))
     method = _none_if_empty(raw.get("method"))
     reactants = raw.get("reactants") if isinstance(raw.get("reactants"), list) else []
@@ -148,3 +152,11 @@ def _none_if_empty(value: Any) -> str | None:
     text = str(value).strip()
     return text or None
 
+
+def _extract_doi(raw: dict[str, Any], sample_id: str) -> str | None:
+    explicit_doi = _none_if_empty(raw.get("doi")) or _none_if_empty(raw.get("DOI"))
+    if explicit_doi:
+        return explicit_doi
+
+    prefix = sample_id.split("::", 1)[0] if "::" in sample_id else ""
+    return prefix if _DOI_PATTERN.fullmatch(prefix) else None

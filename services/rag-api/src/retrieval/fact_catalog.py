@@ -14,7 +14,7 @@ from .catalog_query import AggregateQuery, formula_elements, normalize_reactant_
 from .growth_records import normalize_growth_record
 
 
-CATALOG_VERSION = "2"
+CATALOG_VERSION = "3"
 REPRESENTATIVE_LIMIT = 12
 
 

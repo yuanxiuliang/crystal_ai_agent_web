@@ -148,8 +148,9 @@ def test_real_llm_rag_contracts() -> None:
         assert literature_record["record_id"] == "e2e::taas::001"
         assert literature_record["material_formula"] == "TaAs"
         assert literature_record["growth_method"] == "chemical vapor transport"
-        assert literature_record["temperature_program"]
-        assert "1050 C" in literature_record["temperature_program"]
+        assert literature_record["temperature_program"] == (
+            "source_temperature_c=1050; crystal_temperature_c=950; duration_hours=336"
+        )
         assert literature_record["doi"] == "10.5555/e2e.taas.001"
         assert "TaAs" in literature_final["answer"]
         assert any(

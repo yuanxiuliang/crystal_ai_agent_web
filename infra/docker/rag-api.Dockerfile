@@ -1,13 +1,15 @@
 ARG BASE_IMAGE=python:3.12-slim-bookworm
 FROM ${BASE_IMAGE}
 
+ARG TORCH_CPU_WHEEL=https://mirrors.aliyun.com/pytorch-wheels/cpu/torch-2.6.0%2Bcpu-cp312-cp312-linux_x86_64.whl
+
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PIP_NO_CACHE_DIR=1 \
     PIP_PREFER_BINARY=1 \
     PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple \
-    TORCH_CPU_WHEEL=https://mirrors.aliyun.com/pytorch-wheels/cpu/torch-2.6.0%2Bcpu-cp312-cp312-linux_x86_64.whl \
+    TORCH_CPU_WHEEL=${TORCH_CPU_WHEEL} \
     TOKENIZERS_PARALLELISM=false \
     OMP_NUM_THREADS=2 \
     OPENBLAS_NUM_THREADS=2 \

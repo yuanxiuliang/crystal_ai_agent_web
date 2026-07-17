@@ -10,6 +10,8 @@ x-rag-runtime: &rag-runtime
     dockerfile: infra/docker/rag-api.Dockerfile
     args:
       BASE_IMAGE: ${RAG_E2E_API_BASE_IMAGE:-python:3.12-slim-bookworm}
+      # GitHub CI overrides this with the official CPU wheel. Local and X1C defaults stay domestic.
+      TORCH_CPU_WHEEL: ${RAG_E2E_TORCH_CPU_WHEEL:-https://mirrors.aliyun.com/pytorch-wheels/cpu/torch-2.6.0%2Bcpu-cp312-cp312-linux_x86_64.whl}
   environment:
     RAG_API_HOST: 0.0.0.0
     RAG_API_PORT: 8003

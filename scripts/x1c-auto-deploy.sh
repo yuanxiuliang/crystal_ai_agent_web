@@ -13,6 +13,8 @@ REPOSITORY="${AGENTWEB_REPOSITORY:-}"
 RELEASES_ROOT="${AGENTWEB_RELEASES_ROOT:-${DEPLOY_ROOT}-releases}"
 STATE_ROOT="$DEPLOY_ROOT/.cd-state"
 LOCK_FILE="$STATE_ROOT/deploy.lock"
+GIT_NETWORK_ATTEMPTS="${AGENTWEB_GIT_NETWORK_ATTEMPTS:-4}"
+GIT_NETWORK_TIMEOUT_SECONDS="${AGENTWEB_GIT_NETWORK_TIMEOUT_SECONDS:-120}"
 
 require_value() {
   local name="$1"
@@ -29,6 +31,7 @@ command -v docker >/dev/null
 command -v git >/dev/null
 command -v jq >/dev/null
 command -v flock >/dev/null
+command -v timeout >/dev/null
 
 mkdir -p "$STATE_ROOT" "$RELEASES_ROOT"
 exec 9>"$LOCK_FILE"
@@ -48,10 +51,28 @@ if [[ -n "$(git status --porcelain --untracked-files=no)" ]]; then
   exit 1
 fi
 
-remote_sha="$(git -c http.version=HTTP/1.1 ls-remote --refs origin "refs/heads/$BRANCH" | awk 'NR == 1 { print $1 }')"
+remote_sha=""
+for attempt in $(seq 1 "$GIT_NETWORK_ATTEMPTS"); do
+  if remote_sha="$(timeout "$GIT_NETWORK_TIMEOUT_SECONDS" \
+    git -c http.version=HTTP/1.1 \
+      -c http.lowSpeedLimit=1 \
+      -c http.lowSpeedTime=30 \
+      ls-remote --refs origin "refs/heads/$BRANCH" \
+      | awk 'NR == 1 { print $1 }')" \
+    && [[ "$remote_sha" =~ ^[0-9a-f]{40}$ ]]; then
+    break
+  fi
+
+  remote_sha=""
+  if (( attempt < GIT_NETWORK_ATTEMPTS )); then
+    echo "[cd] unable to resolve origin/$BRANCH (attempt $attempt/$GIT_NETWORK_ATTEMPTS); retrying" >&2
+    sleep $((attempt * 5))
+  fi
+done
+
 if [[ ! "$remote_sha" =~ ^[0-9a-f]{40}$ ]]; then
-  echo "[cd] unable to resolve origin/$BRANCH" >&2
-  exit 1
+  echo "[cd] unable to resolve origin/$BRANCH after $GIT_NETWORK_ATTEMPTS attempts; retry on the next timer run" >&2
+  exit 0
 fi
 
 deployed_sha="$(cat "$STATE_ROOT/deployed-sha" 2>/dev/null || true)"
@@ -99,7 +120,28 @@ case "$ci_status" in
     ;;
 esac
 
-git -c http.version=HTTP/1.1 fetch --prune origin "$BRANCH"
+fetch_succeeded=false
+for attempt in $(seq 1 "$GIT_NETWORK_ATTEMPTS"); do
+  if timeout "$GIT_NETWORK_TIMEOUT_SECONDS" \
+    git -c http.version=HTTP/1.1 \
+      -c http.lowSpeedLimit=1 \
+      -c http.lowSpeedTime=30 \
+      fetch --prune origin "$BRANCH"; then
+    fetch_succeeded=true
+    break
+  fi
+
+  if (( attempt < GIT_NETWORK_ATTEMPTS )); then
+    echo "[cd] fetch failed (attempt $attempt/$GIT_NETWORK_ATTEMPTS); retrying" >&2
+    sleep $((attempt * 5))
+  fi
+done
+
+if [[ "$fetch_succeeded" != true ]]; then
+  echo "[cd] fetch did not complete after $GIT_NETWORK_ATTEMPTS attempts; retry on the next timer run" >&2
+  exit 0
+fi
+
 git cat-file -e "$remote_sha^{commit}"
 
 release_root="$RELEASES_ROOT/$remote_sha"

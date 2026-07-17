@@ -80,6 +80,7 @@ jobs:
           test -f infra/compose/.env.x1c.example
           test -f infra/relay/nginx/aicrystal.yuanxiuliang.cn.conf
           test -f infra/docker/rag-api.Dockerfile
+          test -f infra/docker/rag-api-test.Dockerfile
           test -f infra/docker/rag-web.Dockerfile
           test -f infra/systemd/agentweb-rag.service
           test -f infra/systemd/agentweb-rag-tunnel.service
@@ -90,6 +91,7 @@ jobs:
           test -f e2e/fixtures/growth_records.text_only.jsonl
           test -f e2e/fixtures/growth_records.raw.jsonl
           test -f services/rag-api/src/retrieval/fact_catalog.py
+          grep -Fq 'COPY e2e/fixtures /opt/agentweb/e2e/fixtures' infra/docker/rag-api-test.Dockerfile
           grep -Fq 'RAG_CATALOG_INPUT' infra/docker/entrypoints/rag-bootstrap.sh
           grep -Fq 'catalog_status=ready' e2e/run-rag-e2e.sh
           grep -Fq 'proxy_cache off;' infra/relay/nginx/aicrystal.yuanxiuliang.cn.conf

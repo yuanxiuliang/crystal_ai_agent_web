@@ -23,15 +23,23 @@ async def answer_direct(state: GrowthRAGState, llm: LLMClient) -> dict:
             "final_answer": answer,
             "trace": [trace("answer_direct", "answered_from_short_memory", {"chars": len(answer)})],
         }
-    answer = await llm.answer_direct(
-        state["user_message"],
-        understanding,
-        state["messages"],
-        state["long_memories"],
-        state["conversation_summary"],
-        state["active_context"],
-    )
+    try:
+        answer = await llm.answer_direct(
+            state["user_message"],
+            understanding,
+            state["messages"],
+            state["long_memories"],
+            state["conversation_summary"],
+            state["active_context"],
+        )
+        trace_event = "answered"
+    except Exception:  # noqa: BLE001 - direct chat remains available during transient LLM outages.
+        answer = (
+            "当前生成式回答服务暂时不可用，因此我不能给出未经验证的解释。"
+            "本次对话中的明确偏好或约束仍会按记忆规则处理；请稍后重试。"
+        )
+        trace_event = "llm_unavailable_fallback"
     return {
         "final_answer": answer,
-        "trace": [trace("answer_direct", "answered", {"chars": len(answer)})],
+        "trace": [trace("answer_direct", trace_event, {"chars": len(answer)})],
     }

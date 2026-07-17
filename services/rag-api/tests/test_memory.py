@@ -84,6 +84,31 @@ def test_memory_is_persistent_and_bounded(tmp_path) -> None:
     assert "ZnIn2S4" in memories[0]["content"]
 
 
+def test_explicit_memory_survives_direct_llm_timeout(tmp_path) -> None:
+    class FailingDirectLLM(MockLLMClient):
+        async def answer_direct(self, *args, **kwargs) -> str:
+            raise TimeoutError("simulated direct-answer timeout")
+
+    store = _store(tmp_path)
+    graph = GrowthRAGGraph(
+        llm=FailingDirectLLM(), retrieval=MockRetrievalService(), memory_store=store
+    )
+
+    final = asyncio.run(
+        _run_turn(
+            graph,
+            user_id="researcher-a",
+            session_id="direct-timeout",
+            message="请记住，我偏好中文回复。",
+        )
+    )
+
+    assert "暂时不可用" in final["answer"]
+    assert final["memory"]["long_term_written"] is True
+    memories = store.load_long_memories(user_id="researcher-a", query="中文")
+    assert any("中文" in item["content"] for item in memories)
+
+
 def test_short_memory_material_history_survives_message_compaction(tmp_path) -> None:
     store = _store(tmp_path)
     graph = GrowthRAGGraph(

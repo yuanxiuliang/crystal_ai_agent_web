@@ -127,3 +127,50 @@ def test_auth_and_session_api_use_cookie_identity(monkeypatch, tmp_path) -> None
         )
         assert login.status_code == 200
         assert bob_client.get(f"/api/rag/sessions/{session_id}/messages").status_code == 404
+
+
+def test_bootstrap_api_returns_an_owner_scoped_ready_workspace(monkeypatch, tmp_path) -> None:
+    account_store = AccountStore(f"sqlite:///{tmp_path / 'accounts.sqlite3'}")
+    conversation_store = ConversationStore(f"sqlite:///{tmp_path / 'conversations.sqlite3'}")
+    monkeypatch.setattr(auth_api, "get_default_account_store", lambda: account_store)
+    monkeypatch.setattr(account_dependencies, "get_default_account_store", lambda: account_store)
+    monkeypatch.setattr(
+        conversations_api, "get_default_conversation_store", lambda: conversation_store
+    )
+
+    with TestClient(app) as alice_client:
+        login = alice_client.post(
+            "/api/auth/login",
+            json={"email": "alice@example.com", "password": "alice-password"},
+        )
+        assert login.status_code == 200
+
+        first_bootstrap = alice_client.post("/api/rag/bootstrap", json={})
+        assert first_bootstrap.status_code == 200
+        first_payload = first_bootstrap.json()
+        session_id = first_payload["active_session"]["id"]
+        assert first_payload["user"] == {"id": login.json()["user"]["id"], "email": "alice@example.com"}
+        assert [session["id"] for session in first_payload["sessions"]] == [session_id]
+        assert first_payload["messages"] == []
+
+        conversation_store.append_message(
+            user_id=first_payload["user"]["id"],
+            session_id=session_id,
+            role="user",
+            content="TaAs 单晶怎么做？",
+        )
+        requested_bootstrap = alice_client.post(
+            "/api/rag/bootstrap", json={"requested_session_id": session_id}
+        )
+        assert requested_bootstrap.status_code == 200
+        assert requested_bootstrap.json()["active_session"]["id"] == session_id
+        assert requested_bootstrap.json()["messages"][0]["content"] == "TaAs 单晶怎么做？"
+
+    with TestClient(app) as bob_client:
+        assert bob_client.post(
+            "/api/auth/login",
+            json={"email": "bob@example.com", "password": "bob-password"},
+        ).status_code == 200
+        assert bob_client.post(
+            "/api/rag/bootstrap", json={"requested_session_id": session_id}
+        ).status_code == 404

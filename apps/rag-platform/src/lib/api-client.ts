@@ -1,6 +1,7 @@
 import type {
   ChatMessage,
   ChatSession,
+  ChatWorkspaceBootstrap,
   CurrentUser,
   LoginResult,
 } from "./types";
@@ -48,6 +49,15 @@ export async function logout(): Promise<void> {
 
 export async function getCurrentUser(): Promise<CurrentUser> {
   return request<CurrentUser>("/api/auth/me");
+}
+
+export async function bootstrapChatWorkspace(
+  requestedSessionId?: string,
+): Promise<ChatWorkspaceBootstrap> {
+  return request<ChatWorkspaceBootstrap>("/api/rag/bootstrap", {
+    method: "POST",
+    body: JSON.stringify({ requested_session_id: requestedSessionId ?? null }),
+  });
 }
 
 export async function listSessions(): Promise<ChatSession[]> {

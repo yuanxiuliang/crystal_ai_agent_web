@@ -17,7 +17,9 @@ if [[ -n "${RAG_E2E_IMAGE_PROXY:-}" ]]; then
   export RAG_E2E_API_BASE_IMAGE="${RAG_E2E_API_BASE_IMAGE:-$proxy/library/python:3.12-slim-bookworm}"
   export RAG_E2E_WEB_BASE_IMAGE="${RAG_E2E_WEB_BASE_IMAGE:-$proxy/library/node:22-bookworm-slim}"
   export RAG_E2E_POSTGRES_IMAGE="${RAG_E2E_POSTGRES_IMAGE:-$proxy/pgvector/pgvector:pg16}"
-  export RAG_E2E_ETCD_IMAGE="${RAG_E2E_ETCD_IMAGE:-$proxy/quay.io/coreos/etcd:v3.5.18}"
+  # Quay images are not mirrored under every Docker Hub proxy prefix. Keep this overrideable
+  # while using the domestic Quay mirror that carries the Milvus-compatible etcd release.
+  export RAG_E2E_ETCD_IMAGE="${RAG_E2E_ETCD_IMAGE:-quay.m.daocloud.io/coreos/etcd:v3.5.18}"
   export RAG_E2E_MINIO_IMAGE="${RAG_E2E_MINIO_IMAGE:-$proxy/minio/minio:RELEASE.2024-12-18T13-15-44Z}"
   export RAG_E2E_MILVUS_IMAGE="${RAG_E2E_MILVUS_IMAGE:-$proxy/milvusdb/milvus:v2.6.0}"
 fi
@@ -46,13 +48,20 @@ cd "$ROOT_DIR"
 "${compose[@]}" config -q
 
 echo "[e2e] building production-like API and Web images"
-"${compose[@]}" build rag-api rag-web
-docker build \
-  --platform "$E2E_PLATFORM" \
-  --build-arg "BASE_IMAGE=$API_IMAGE" \
-  --tag "$TEST_IMAGE" \
-  --file "$ROOT_DIR/infra/docker/rag-api-test.Dockerfile" \
-  "$ROOT_DIR"
+if [[ "${RAG_E2E_SKIP_BUILD:-0}" == "1" ]]; then
+  echo "[e2e] reusing prebuilt API, Web, and test images"
+  docker image inspect "$API_IMAGE" >/dev/null
+  docker image inspect "agentweb-rag-web:e2e" >/dev/null
+  docker image inspect "$TEST_IMAGE" >/dev/null
+else
+  "${compose[@]}" build rag-api rag-web
+  docker build \
+    --platform "$E2E_PLATFORM" \
+    --build-arg "BASE_IMAGE=$API_IMAGE" \
+    --tag "$TEST_IMAGE" \
+    --file "$ROOT_DIR/infra/docker/rag-api-test.Dockerfile" \
+    "$ROOT_DIR"
+fi
 
 echo "[e2e] starting disposable PostgreSQL, Milvus, API, and Web services"
 "${compose[@]}" up -d

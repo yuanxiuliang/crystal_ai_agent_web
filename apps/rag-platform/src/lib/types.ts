@@ -25,6 +25,13 @@ export type ChatMessage = {
   response?: FinalResponse | null;
 };
 
+export type ChatWorkspaceBootstrap = {
+  user: CurrentUser;
+  sessions: ChatSession[];
+  active_session: ChatSession;
+  messages: ChatMessage[];
+};
+
 export type Citation = {
   record_id: string;
   doi: string | null;

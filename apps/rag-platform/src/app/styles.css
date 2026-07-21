@@ -66,6 +66,47 @@ a:focus-visible {
   width: min(100%, 400px);
 }
 
+.chat-bootstrap {
+  align-items: center;
+  background: var(--page);
+  display: flex;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 32px 24px;
+}
+
+.chat-bootstrap-status {
+  align-items: center;
+  color: var(--muted-strong);
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+  gap: 12px;
+  text-align: center;
+}
+
+.chat-bootstrap-status svg {
+  color: var(--accent);
+}
+
+.chat-bootstrap-status p {
+  line-height: 1.5;
+  margin: 0;
+}
+
+.chat-bootstrap-retry {
+  background: transparent;
+  border: 0;
+  color: var(--accent-strong);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 4px 0;
+}
+
+.chat-bootstrap-retry:hover {
+  color: var(--accent);
+}
+
 .auth-brand,
 .product-mark,
 .evidence-header > div,

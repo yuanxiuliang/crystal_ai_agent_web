@@ -8,6 +8,8 @@ from ..accounts.dependencies import require_current_account
 from ..accounts.store import Account
 from ..conversations.store import get_default_conversation_store
 from ..schemas.conversations import (
+    ChatBootstrapRequest,
+    ChatBootstrapResponse,
     ChatMessageResponse,
     ChatSessionResponse,
     RenameChatSessionRequest,
@@ -15,6 +17,39 @@ from ..schemas.conversations import (
 
 
 router = APIRouter()
+
+
+@router.post("/bootstrap", response_model=ChatBootstrapResponse)
+async def bootstrap_chat_workspace(
+    body: ChatBootstrapRequest,
+    account: Account = Depends(require_current_account),
+) -> dict:
+    """Return a complete, owner-scoped workspace before the web client mounts its UI."""
+    store = get_default_conversation_store()
+    sessions = await asyncio.to_thread(store.list_sessions, user_id=account.id)
+
+    if body.requested_session_id:
+        active_session = next(
+            (session for session in sessions if session["id"] == body.requested_session_id), None
+        )
+        if active_session is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="会话不存在。")
+    else:
+        active_session = sessions[0] if sessions else await asyncio.to_thread(
+            store.create_session, user_id=account.id
+        )
+        if not sessions:
+            sessions = [active_session]
+
+    messages = await asyncio.to_thread(
+        store.list_messages, user_id=account.id, session_id=active_session["id"]
+    )
+    return {
+        "user": {"id": account.id, "email": account.email},
+        "sessions": sessions,
+        "active_session": active_session,
+        "messages": messages,
+    }
 
 
 @router.get("/sessions", response_model=list[ChatSessionResponse])

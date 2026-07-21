@@ -32,6 +32,55 @@ async function startNewSession(page: Page): Promise<void> {
   });
 }
 
+function deferred() {
+  let resolve: () => void = () => undefined;
+  const promise = new Promise<void>((next) => {
+    resolve = next;
+  });
+  return { promise, resolve };
+}
+
+test("an unauthenticated chat route never mounts the workbench before login redirect", async ({ page }) => {
+  const bootstrap = deferred();
+  let bootstrapRequested = false;
+  await page.route("**/api/rag/bootstrap", async (route) => {
+    bootstrapRequested = true;
+    await bootstrap.promise;
+    await route.continue();
+  });
+
+  await page.goto("/chat");
+  await expect.poll(() => bootstrapRequested).toBe(true);
+  await expect(page.locator(".chat-bootstrap")).toBeVisible();
+  await expect(page.locator(".workbench")).toHaveCount(0);
+
+  bootstrap.resolve();
+  await expect(page).toHaveURL(/\/login/);
+  await expect(page.locator(".workbench")).toHaveCount(0);
+});
+
+test("an authenticated chat route mounts the workbench only after workspace bootstrap", async ({ page }) => {
+  await login(page, email("startup"));
+  await expect(page.getByRole("textbox", { name: "研究问题" })).toBeVisible();
+
+  const bootstrap = deferred();
+  let bootstrapRequested = false;
+  await page.route("**/api/rag/bootstrap", async (route) => {
+    bootstrapRequested = true;
+    await bootstrap.promise;
+    await route.continue();
+  });
+
+  await page.goto("/chat");
+  await expect.poll(() => bootstrapRequested).toBe(true);
+  await expect(page.locator(".chat-bootstrap")).toBeVisible();
+  await expect(page.locator(".workbench")).toHaveCount(0);
+
+  bootstrap.resolve();
+  await expect(page.locator(".workbench")).toBeVisible();
+  await expect(page.getByRole("textbox", { name: "研究问题" })).toBeEditable();
+});
+
 test("a user can register, edit a real-record statistic, and view an explicitly unverified prediction", async ({ page }) => {
   // The API E2E contract exercises successful real-LLM generation. This browser journey targets
   // deterministic aggregate retrieval, edit/regeneration, and local prediction rendering.

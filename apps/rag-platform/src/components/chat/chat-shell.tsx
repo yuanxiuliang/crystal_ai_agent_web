@@ -18,9 +18,9 @@ import { KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
   ApiError,
+  bootstrapChatWorkspace,
   createSession,
   deleteSession,
-  getCurrentUser,
   listMessages,
   listSessions,
   logout,
@@ -35,6 +35,7 @@ import type {
   FinalResponse,
   LiteratureEvidenceRecord,
   PredictionRoute,
+  ChatWorkspaceBootstrap,
 } from "../../lib/types";
 import { MarkdownAnswer } from "./markdown-answer";
 import { EvidencePanel } from "../evidence/evidence-panel";
@@ -306,15 +307,45 @@ function UserMessage({
   );
 }
 
+type BootstrapPhase = "checking" | "error" | "ready";
+
+type ChatBootstrapScreenProps = {
+  phase: BootstrapPhase;
+  error: string | null;
+  onRetry: () => void;
+};
+
+function ChatBootstrapScreen({ phase, error, onRetry }: ChatBootstrapScreenProps) {
+  return (
+    <main className="chat-bootstrap" aria-busy={phase !== "error"}>
+      <div className="chat-bootstrap-status">
+        <FlaskConical aria-hidden="true" size={20} strokeWidth={1.8} />
+        {phase === "error" ? (
+          <>
+            <p role="alert">{error ?? "暂时无法准备研究会话。"}</p>
+            <button className="chat-bootstrap-retry" onClick={onRetry} type="button">重试</button>
+          </>
+        ) : <p>正在验证登录状态并准备研究会话</p>}
+      </div>
+    </main>
+  );
+}
+
 export function ChatShell() {
   const params = useParams<{ sessionId?: string | string[] }>();
   const router = useRouter();
   const requestedSessionId = routeSessionId(params.sessionId);
   const abortRef = useRef<AbortController | null>(null);
+  const bootstrapCacheRef = useRef<ChatWorkspaceBootstrap | null>(null);
+  const workspaceReadyRef = useRef(false);
   const [user, setUser] = useState<CurrentUser | null>(null);
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
+  const [workspaceReady, setWorkspaceReady] = useState(false);
+  const [bootstrapPhase, setBootstrapPhase] = useState<BootstrapPhase>("checking");
+  const [bootstrapError, setBootstrapError] = useState<string | null>(null);
+  const [bootstrapAttempt, setBootstrapAttempt] = useState(0);
   const [initializing, setInitializing] = useState(true);
   const [isRunning, setIsRunning] = useState(false);
   const [pendingAssistantId, setPendingAssistantId] = useState<string | null>(null);
@@ -352,48 +383,71 @@ export function ChatShell() {
 
   useEffect(() => {
     let cancelled = false;
+    let awaitingRoute = false;
     async function load() {
       setInitializing(true);
       setError(null);
+      if (!workspaceReadyRef.current) {
+        setBootstrapPhase("checking");
+        setBootstrapError(null);
+      }
       try {
-        const currentUser = await getCurrentUser();
+        const cached = bootstrapCacheRef.current;
+        const workspace = cached && (!requestedSessionId || cached.active_session.id === requestedSessionId)
+          ? cached
+          : await bootstrapChatWorkspace(requestedSessionId ?? undefined);
         if (cancelled) return;
-        setUser(currentUser);
-        const availableSessions = await refreshSessions();
-        if (cancelled) return;
-        if (!requestedSessionId) {
-          const target = availableSessions[0] ?? (await createSession());
-          if (!availableSessions.length) setSessions([target]);
-          router.replace(`/chat/${target.id}`);
+
+        if (!requestedSessionId || workspace.active_session.id !== requestedSessionId) {
+          bootstrapCacheRef.current = workspace;
+          awaitingRoute = true;
+          router.replace(`/chat/${workspace.active_session.id}`);
           return;
         }
-        if (!availableSessions.some((session) => session.id === requestedSessionId)) {
-          router.replace("/chat");
-          return;
-        }
-        const history = await listMessages(requestedSessionId);
-        if (!cancelled) setMessages(history);
+
+        bootstrapCacheRef.current = null;
+        setUser(workspace.user);
+        setSessions(workspace.sessions);
+        setMessages(workspace.messages);
+        workspaceReadyRef.current = true;
+        setWorkspaceReady(true);
+        setBootstrapPhase("ready");
       } catch (cause) {
         if (cancelled) return;
         if (cause instanceof ApiError && cause.status === 401) {
+          awaitingRoute = true;
           router.replace("/login");
           return;
         }
-        setError(cause instanceof Error ? cause.message : "无法加载研究会话。");
+        if (cause instanceof ApiError && cause.status === 404) {
+          bootstrapCacheRef.current = null;
+          awaitingRoute = true;
+          router.replace("/chat");
+          return;
+        }
+        const message = cause instanceof Error ? cause.message : "无法加载研究会话。";
+        if (workspaceReadyRef.current) {
+          setError(message);
+        } else {
+          setBootstrapError(message);
+          setBootstrapPhase("error");
+        }
       } finally {
-        if (!cancelled) setInitializing(false);
+        if (!cancelled && !awaitingRoute) setInitializing(false);
       }
     }
     void load();
     return () => {
       cancelled = true;
     };
-  }, [requestedSessionId, router]);
+  }, [bootstrapAttempt, requestedSessionId, router]);
 
   async function startNewSession() {
     try {
       const session = await createSession();
       setSessions((current) => [session, ...current]);
+      setMessages([]);
+      setInitializing(true);
       setSidebarOpen(false);
       router.push(`/chat/${session.id}`);
     } catch (cause) {
@@ -407,6 +461,8 @@ export function ChatShell() {
       const next = sessions.filter((session) => session.id !== sessionId);
       setSessions(next);
       if (sessionId === requestedSessionId) {
+        setMessages([]);
+        setInitializing(true);
         if (next[0]) router.push(`/chat/${next[0].id}`);
         else await startNewSession();
       }
@@ -451,6 +507,14 @@ export function ChatShell() {
   function cancelMessageEdit() {
     setEditingMessageId(null);
     setEditingValue("");
+  }
+
+  function selectSession(sessionId: string) {
+    if (sessionId === requestedSessionId) return;
+    setMessages([]);
+    setInitializing(true);
+    setSidebarOpen(false);
+    router.push(`/chat/${sessionId}`);
   }
 
   async function submit(replaceMessageId?: string) {
@@ -604,6 +668,16 @@ export function ChatShell() {
     }
   }
 
+  if (!workspaceReady) {
+    return (
+      <ChatBootstrapScreen
+        error={bootstrapError}
+        onRetry={() => setBootstrapAttempt((attempt) => attempt + 1)}
+        phase={bootstrapPhase}
+      />
+    );
+  }
+
   return (
     <div className={`workbench ${evidenceOpen ? "evidence-open" : ""}`}>
       <aside className={`conversation-sidebar ${sidebarOpen ? "is-open" : ""}`}>
@@ -632,7 +706,7 @@ export function ChatShell() {
                   value={renameValue}
                 />
               ) : (
-                <button className="session-select" onClick={() => { setSidebarOpen(false); router.push(`/chat/${session.id}`); }} type="button">
+                <button className="session-select" onClick={() => selectSession(session.id)} type="button">
                   {session.title}
                 </button>
               )}
